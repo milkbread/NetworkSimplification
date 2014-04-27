@@ -1,0 +1,92 @@
+<html>
+<head>
+	<title>Playing with quadtrees</title>
+	<script src="d3.v3.min.js"></script>
+	<style type="text/css">
+		rect {
+			fill: none;
+			stroke: #000;
+			stroke-width: .001px;
+		}
+	</style>
+</head>
+<body>
+<script type="text/javascript">
+	function DataPoint(input) {
+		var self = this;
+		self.coords = input.coords;
+	}
+	var width = 960,
+	    height = 700;
+	var svg = d3.select("body").append("svg")
+	    .attr("width", width)
+	    .attr("height", height)
+	    .on("mousedown", startScaling)
+	    .on("mouseup", stopScaling);
+	var scale = 300,
+		translationX = scale * 72.67,
+		translationY = scale * -42.67;
+	var group = svg.append("g")
+	    .attr("transform", function(d){return "translate("+ translationX + ", " + translationY + ") scale(" + scale + ")"; });
+	var projection = d3.geo.albersUsa()
+	    .scale(1000)
+	    .translate([width / 2, height / 2]);
+	d3.json("lines.json", function(error, data) {
+		console.log(data);
+		var extent = [[181, 181], [-181, -181]]; //[[minX, minY], [maxX, maxY]]
+		var dataPoints = [];
+		data.features.forEach(function(feature) {
+			feature.geometry.coordinates.forEach(function(point) {
+				// point = projection(point);
+				dataPoints.push(point);
+				if (point[0] < extent[0][0]) extent[0][0] = point[0];
+				if (point[1] < extent[0][1]) extent[0][1] = point[1];
+				if (point[0] > extent[1][0]) extent[1][0] = point[0];
+				if (point[1] > extent[1][1]) extent[1][1] = point[1];
+				// console.log(point, projection(point))
+				// return point;
+			});
+		});
+		console.log(extent)
+		var quadtree = d3.geom.quadtree()
+		    .extent(extent)
+		    (dataPoints);
+
+		group.selectAll(".node")
+		    .data(nodes(quadtree))
+		  .enter().append("rect")
+		  	.attr("x", function(d) { return d.x; })
+		    .attr("y", function(d) { return d.y; })
+		    .attr("width", function(d) { return d.width; })
+		    .attr("height", function(d) { return d.height; })
+		  			// .attr("d", path);
+	});
+
+	// Collapse the quadtree into an array of rectangles.
+	function nodes(quadtree) {
+	  var nodes = [];
+	  quadtree.visit(function(node, x1, y1, x2, y2) {
+	    nodes.push({x: x1, y: y1, width: x2 - x1, height: y2 - y1});
+	  });
+	  return nodes;
+	}
+
+	function startScaling() {
+		var startingPosition = d3.mouse(this);
+		console.log(startingPosition);
+		svg.on("mousemove", function() {
+			var currentPosition = d3.mouse(this);
+			// scale = scale + (currentPosition[1]-startingPosition[1]);
+			// translationX = scale * 72.67,
+			translationX = translationX + (currentPosition[0]-startingPosition[0]) * .1;
+			translationY = translationY + (currentPosition[1]-startingPosition[1]) * .1;
+			group.attr("transform", function(d){return "translate("+ translationX + ", " + translationY + ") scale(" + scale + ")"; });
+		});
+	}
+
+	function stopScaling() {
+		svg.on("mousemove", null);
+	}
+</script>
+</body>
+</html>
