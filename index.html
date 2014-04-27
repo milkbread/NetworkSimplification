@@ -12,54 +12,64 @@
 </head>
 <body>
 <script type="text/javascript">
-	function DataPoint(input) {
-		var self = this;
-		self.coords = input.coords;
-	}
+	// Concept for a DataPoint-Class
+	// function DataPoint(input) {
+	// 	var self = this;
+	// 	self.coords = input.coords;
+	// }
+
+	// Basic variables
 	var width = 960,
-	    height = 700;
+	    height = 700,
+	    scale = 300,
+		translationX = scale * 72.67,
+		translationY = scale * -42.67;
+
+	// prepar the major SVG-Visualisation area and group
 	var svg = d3.select("body").append("svg")
 	    .attr("width", width)
 	    .attr("height", height)
-	    .on("mousedown", startScaling)
-	    .on("mouseup", stopScaling);
-	var scale = 300,
-		translationX = scale * 72.67,
-		translationY = scale * -42.67;
-	var group = svg.append("g")
-	    .attr("transform", function(d){return "translate("+ translationX + ", " + translationY + ") scale(" + scale + ")"; });
-	var projection = d3.geo.albersUsa()
-	    .scale(1000)
-	    .translate([width / 2, height / 2]);
+	    .on("mousedown", startMoving)
+	    .on("mouseup", stopMoving)
+		.call(
+	    	d3.behavior.zoom().on("zoom", reScale)
+		);
+	var group = svg.append("g");
+
+	// Load data and do visualisations
 	d3.json("lines.json", function(error, data) {
-		console.log(data);
-		var extent = [[181, 181], [-181, -181]]; //[[minX, minY], [maxX, maxY]]
-		var dataPoints = [];
+		// console.log(data);
+		var extent = [[181, 181], [-181, -181]], //[[minX, minY], [maxX, maxY]]
+			dataPoints = [];
+
+		// get all points singulary
 		data.features.forEach(function(feature) {
 			feature.geometry.coordinates.forEach(function(point) {
-				// point = projection(point);
+				// add all points to the major array
 				dataPoints.push(point);
+				// build the extent
 				if (point[0] < extent[0][0]) extent[0][0] = point[0];
 				if (point[1] < extent[0][1]) extent[0][1] = point[1];
 				if (point[0] > extent[1][0]) extent[1][0] = point[0];
 				if (point[1] > extent[1][1]) extent[1][1] = point[1];
-				// console.log(point, projection(point))
-				// return point;
 			});
 		});
-		console.log(extent)
+
+		// Inititialise the quadtree
 		var quadtree = d3.geom.quadtree()
 		    .extent(extent)
 		    (dataPoints);
 
+		// Draw all rectangles by using a collapsed quadtree
 		group.selectAll(".node")
 		    .data(nodes(quadtree))
-		  .enter().append("rect")
-		  	.attr("x", function(d) { return d.x; })
-		    .attr("y", function(d) { return d.y; })
-		    .attr("width", function(d) { return d.width; })
-		    .attr("height", function(d) { return d.height; })
-		  			// .attr("d", path);
+				.enter().append("rect")
+					.attr("x", function(d) { return d.x; })
+					.attr("y", function(d) { return d.y; })
+					.attr("width", function(d) { return d.width; })
+					.attr("height", function(d) { return d.height; })
+
+		transformGroup();
 	});
 
 	// Collapse the quadtree into an array of rectangles.
@@ -71,22 +81,45 @@
 	  return nodes;
 	}
 
-	function startScaling() {
+	function transformGroup() {
+		group.attr("transform", function(d){return "translate("+ translationX + ", " + translationY + ") scale(" + scale + ")"; });
+	}
+
+	function startMoving() {
 		var startingPosition = d3.mouse(this);
-		console.log(startingPosition);
 		svg.on("mousemove", function() {
 			var currentPosition = d3.mouse(this);
-			// scale = scale + (currentPosition[1]-startingPosition[1]);
-			// translationX = scale * 72.67,
 			translationX = translationX + (currentPosition[0]-startingPosition[0]) * .1;
 			translationY = translationY + (currentPosition[1]-startingPosition[1]) * .1;
-			group.attr("transform", function(d){return "translate("+ translationX + ", " + translationY + ") scale(" + scale + ")"; });
+			transformGroup();
 		});
 	}
 
-	function stopScaling() {
+	function stopMoving() {
 		svg.on("mousemove", null);
 	}
+
+	function reScale() {
+  		//detect the mousewheel event
+		if (d3.event.sourceEvent.type.indexOf("wheel") != -1 || d3.event.sourceEvent.type.indexOf("wheel") != -1){
+			var scaleChange = 5;
+	  		if (d3.event.sourceEvent.wheelDelta){
+				if (d3.event.sourceEvent.wheelDelta < 0){
+					scaleChange =  scaleChange * -1;
+				}
+			}else{
+				if (d3.event.sourceEvent.detail < 0){
+					scaleChange =  scaleChange * -1;
+				}
+			}
+			// Calculate the change of the scale and the new translation-parameter
+			scale = scale + scaleChange;
+			translationX = scale * 72.67;
+			translationY = scale * -42.67;
+
+			transformGroup();
+		}
+  	}
 </script>
 </body>
 </html>
