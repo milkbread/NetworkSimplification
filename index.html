@@ -27,8 +27,10 @@
 	var width = 960,
 	    height = 700,
 	    scale = 300,
-		translationX = scale * 72.67,
-		translationY = scale * -42.67;
+		translationX = 0;//scale * 72.67,
+		translationY = 0;//scale * -42.67,
+		scale_ = 1;
+
 
 	// prepar the major SVG-Visualisation area and group
 	var svg = d3.select("body").append("svg")
@@ -83,16 +85,16 @@
 	}
 
 	function transformGroup() {
-		group.attr("transform", function(d){return "scale(1, -1) translate(0,-" + (height) + ")"; });
-		group2.attr("transform", function(d){return "scale(1, -1) translate(0,-" + (height) + ")"; });
+		group.attr("transform", function(d){return "scale("+scale_+", -"+scale_+") translate("+translationX+",-" + (height+translationY) + ")"; });
+		group2.attr("transform", function(d){return "scale("+scale_+", -"+scale_+") translate("+translationX+",-" + (height+translationY) + ")"; });
 	}
 
 	function startMoving() {
 		var startingPosition = d3.mouse(this);
 		svg.on("mousemove", function() {
 			var currentPosition = d3.mouse(this);
-			translationX = translationX + (currentPosition[0]-startingPosition[0]) * .1;
-			translationY = translationY + (currentPosition[1]-startingPosition[1]) * .1;
+			translationX = currentPosition[0]-startingPosition[0];
+			translationY = currentPosition[1]-startingPosition[1];
 			transformGroup();
 		});
 	}
@@ -104,7 +106,7 @@
 	function reScale() {
   		//detect the mousewheel event
 		if (d3.event.sourceEvent.type.indexOf("wheel") != -1 || d3.event.sourceEvent.type.indexOf("wheel") != -1){
-			var scaleChange = 5;
+	  		var scaleChange = .1;
 	  		if (d3.event.sourceEvent.wheelDelta){
 				if (d3.event.sourceEvent.wheelDelta < 0){
 					scaleChange =  scaleChange * -1;
@@ -115,9 +117,7 @@
 				}
 			}
 			// Calculate the change of the scale and the new translation-parameter
-			scale = scale + scaleChange;
-			translationX = scale * 72.67;
-			translationY = scale * -42.67;
+			scale_ = scale_ + scaleChange;
 
 			transformGroup();
 		}
