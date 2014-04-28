@@ -48,3 +48,10 @@ function Selector(container, heading_) {
 					.text( function(d) { return "Line " + d.properties.id; });
 	}
 }
+
+function Dummy(container, heading_) {
+	var self = this;
+	var heading = typeof heading_ !== 'undefined' ? heading_ : "Dummy";
+	self.selector = container.append("div").attr("class", "dummy");
+	self.selector.append("h1").attr("class", "dummyhead").text(heading);
+}
