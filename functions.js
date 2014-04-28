@@ -10,7 +10,7 @@ function nodes(quadtree) {
 function transformGroup() {
 	// Transform all groups
 	groups.forEach(function(group) {
-		group.attr("transform", function(d){
+		group.group.attr("transform", function(d){
 			return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + ((height - 10) + groupPositionY) + ")"; });
 	})
 	// Re-Scale size of points and lines
@@ -54,28 +54,28 @@ function reScale() {
 
 		transformGroup();
 	}
-	}
+}
 
-	function getExtent(elements) {
-		var extent = [[181, 181], [-181, -181]];
-		elements.features.forEach(function(feature) {
-		feature.geometry.coordinates.forEach(function(point) {
-			// build the extent
-			if (point[0] < extent[0][0]) extent[0][0] = point[0];
-			if (point[1] < extent[0][1]) extent[0][1] = point[1];
-			if (point[0] > extent[1][0]) extent[1][0] = point[0];
-			if (point[1] > extent[1][1]) extent[1][1] = point[1];
+function getExtent(elements) {
+	var extent = [[181, 181], [-181, -181]];
+	elements.features.forEach(function(feature) {
+	feature.geometry.coordinates.forEach(function(point) {
+		// build the extent
+		if (point[0] < extent[0][0]) extent[0][0] = point[0];
+		if (point[1] < extent[0][1]) extent[0][1] = point[1];
+		if (point[0] > extent[1][0]) extent[1][0] = point[0];
+		if (point[1] > extent[1][1]) extent[1][1] = point[1];
 		});
 	});
 	return extent;
-	}
+}
 
-	function getAllPoints(elements, extent, projection) {
-		var dataPoints = [];
+function getAllPoints(elements, extent, projection) {
+	var dataPoints = [];
 	elements.features.forEach(function(feature) {
 		feature.geometry.coordinates.forEach(function(point) {
 			dataPoints.push(projection(point));
 		});
 	});
 	return dataPoints;
-	}
+}

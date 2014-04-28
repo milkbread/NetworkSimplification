@@ -18,3 +18,12 @@ rect {
 	fill: rgba(100%, 0%, 0%, .7);
 	stroke: none;
 }
+
+.container > div {
+	display: inline-block;
+	vertical-align: top;
+}
+
+div > svg {
+	border: dashed 1px;
+}

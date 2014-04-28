@@ -3,6 +3,7 @@
 	<title>Playing with quadtrees</title>
 	<script src="d3.v3.min.js"></script>
 	<script src="functions.js"></script>
+	<script src="toolbar.js"></script>
 	<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,16 +15,21 @@
 	// }
 
 	// Basic variables
-	var width = 800,
+	var width = 730,
 	    height = 600,
 	    scale = 280,
 		groupScale = 1,
 		groupPositionX = oldGroupPositionX = 0,
 		groupPositionY = oldGroupPositionY = 0;
 
+	var container = d3.select("body").append("div")
+	    .attr("width", 960)
+	    .attr("height", height)
+	    .attr("class", "container");
+
 
 	// prepare the major SVG-Visualisation area
-	var svg = d3.select("body").append("svg")
+	var svg = container.append("div").append("svg")
 	    .attr("width", width)
 	    .attr("height", height)
 	    .on("mousedown", startMoving)
@@ -31,12 +37,22 @@
 		.call(
 	    	d3.behavior.zoom().on("zoom", reScale)
 		);
+
 	// prepare the SVG-Groups and corresponding object-variables
 	var rectGroup = svg.append("g"),
 		pointGroup = svg.append("g"),
 		lineGroup = svg.append("g"),
-		groups = [rectGroup, pointGroup, lineGroup],
+		consPointGroup = svg.append("g"),
 		rectangles, points, lines;
+
+	var groups = [
+		{name: "rects", description: "Rectangles", group: rectGroup},
+		{name: "points", description: "Points of lines", group: pointGroup},
+		{name: "lines", description: "Lines", group: lineGroup},
+		{name: "consPoints", description: "Constraining points", group: consPointGroup}
+	];
+
+	var toolbar = new Toolbar(container, groups);
 
 	function processData(lineData, pointData) {
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
@@ -75,7 +91,7 @@
 					.attr("class", "line");
 
 		// Draw the constraining points
-		constrainingPoints = pointGroup.selectAll(".consPoint")
+		constrainingPoints = consPointGroup.selectAll(".consPoint")
 			.data(pointData.features)
 				.enter().append("circle")
 					.attr("cx", function(d) { return projection(d.geometry.coordinates)[0]; })
