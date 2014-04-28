@@ -82,7 +82,7 @@ function getAllPoints(elements, extent, projection) {
 
 function filterPoints(point, numberOfPoints) {
 	if (typeof point[2] !== "undefined") {
-		return point[3] > numberOfPoints + 1;
+		return point[3] > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
 

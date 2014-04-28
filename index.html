@@ -131,10 +131,12 @@
 						var numberOfPoints = pointNumberSelector.selectedID()
 						lineGroup.select("#line" + lineSelector.selectedID())
 							.attr("d", function(d) {
-								d.geometry.coordinates = d.geometry.coordinates.filter(function(point) {
-									return filterPoints(point, numberOfPoints);
-								})
-								return path(d.geometry);
+								return path({
+									type: d.geometry.type,
+									coordinates: d.geometry.coordinates.filter(function(point) {
+										return filterPoints(point, numberOfPoints);
+									})
+								});
 							});
 					})
 			});
