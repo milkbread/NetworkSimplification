@@ -40,7 +40,7 @@
 	    scale = 300,
 		groupScale = 1,
 		groupPositionX = oldGroupPositionX = 0,
-		groupPositionY = oldgroupPositionY = 0;
+		groupPositionY = oldGroupPositionY = 0;
 
 
 	// prepare the major SVG-Visualisation area
@@ -95,6 +95,7 @@
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line");
 
+		// Draw the constraining points
 		constrainingPoints = pointGroup.selectAll(".consPoint")
 			.data(pointData.features)
 				.enter().append("circle")
@@ -138,7 +139,7 @@
 		svg.on("mousemove", function() {
 			var currentPosition = d3.mouse(this);
 			groupPositionX = oldGroupPositionX + currentPosition[0] - startingPosition[0];
-			groupPositionY = oldgroupPositionY + currentPosition[1] - startingPosition[1];
+			groupPositionY = oldGroupPositionY + currentPosition[1] - startingPosition[1];
 			transformGroup();
 		});
 	}
