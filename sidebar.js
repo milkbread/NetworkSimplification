@@ -34,18 +34,26 @@ function Selector(container, heading_) {
 
 	self.selector.append("h1").attr("class", "selectorhead").text(heading);
 
-	self.option = self.selector.append("select")
-
 	self.selectedID = function() {
 		return self.option.property("value");
 	}
 
-	self.addElements = function(elements) {
+	self.addElements = function(elements, type) {
+		self.selector.select(".select").remove();
+		self.option = self.selector.append("select").attr("class", "select")
+
 		self.option.selectAll("option")
 			.data(elements)
 				.enter().append("option")
 					.attr("value", function(d) { return d.properties.id; })
-					.text( function(d) { return "Line " + d.properties.id; });
+					.text( function(d) { return type + " " + d.properties.id; });
+	}
+
+	self.throwException = function(message) {
+		self.selector.select(".select").remove();
+		self.selector.append("div")
+			.attr("class", "exception select")
+			.text(message)
 	}
 }
 

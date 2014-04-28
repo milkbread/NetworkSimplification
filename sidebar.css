@@ -3,3 +3,8 @@ h1.selectorhead {
 	margin: 1px;
 	font-size: 18px;
 }
+
+.exception {
+	width: 160px;
+	color: #f00;
+}

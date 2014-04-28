@@ -56,11 +56,21 @@
 	// Create some sidebar elements
 	var sidebarContainer = container.append("div").attr("id", "sidebarContainer");
 	var toolbar = new Toolbar(sidebarContainer, groups, "Select Elements");
-	var selector = new Selector(sidebarContainer, "Select a line");
+	var lineSelector = new Selector(sidebarContainer, "Select a line");
+	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove");
 
 	function processData(lineData, pointData) {
-		// selector.selector.remove()
-		selector.addElements(lineData.features);
+		lineSelector.addElements(lineData.features, "Line");
+		// Add an action for the change of the 'lineSelector'
+		lineSelector.option
+			.on("change", function() {
+				var numberOfPoints = lineData.features[parseInt(lineSelector.selectedID())].geometry.coordinates.length
+				if (numberOfPoints > 2) {
+					pointNumberSelector.addElements(d3.range(numberOfPoints-1).map(function(d) {return {properties: {id: d}}}), "");
+				} else {
+					pointNumberSelector.throwException("Nop...number of points is <= 2!");
+				}
+			});
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
