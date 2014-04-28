@@ -64,8 +64,10 @@
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
 
+		// Add area of triangle to each feature
 		lineData.features.forEach(function(feature) {
 			addTriangleSize(feature.geometry, projection);
+			feature = rankAfterTriangles(feature);
 		});
 
 		var path = d3.geo.path()
@@ -126,9 +128,12 @@
 				}
 				pointNumberSelector.select
 					.on("change", function() {
+						var numberOfPoints = pointNumberSelector.selectedID()
 						lineGroup.select("#line" + lineSelector.selectedID())
 							.attr("d", function(d) {
-								d.geometry.coordinates = d.geometry.coordinates.filter(filterPoints)
+								d.geometry.coordinates = d.geometry.coordinates.filter(function(point) {
+									return filterPoints(point, numberOfPoints);
+								})
 								return path(d.geometry);
 							});
 					})

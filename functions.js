@@ -80,9 +80,9 @@ function getAllPoints(elements, extent, projection) {
 	return dataPoints;
 }
 
-function filterPoints(point, i) {
+function filterPoints(point, numberOfPoints) {
 	if (typeof point[2] !== "undefined") {
-		return point[2] > 1
+		return point[3] > numberOfPoints + 1;
 	} else return point;
 }
 
@@ -119,4 +119,20 @@ function addTriangleSize(feature, projection) {
 
 function area(t) {
   return Math.abs((t[0][0] - t[2][0]) * (t[1][1] - t[0][1]) - (t[0][0] - t[1][0]) * (t[2][1] - t[0][1]));
+}
+
+function rankAfterTriangles(feature) {
+	var triangles = feature.geometry.coordinates.map(function(d, i) {return {area: typeof d[2] !== "undefined" ? d[2] : -1, index: i};})
+	triangles.sort(function(a, b) {
+		return a.area - b.area;
+	});
+	var trianglesObject = {};
+	triangles.forEach(function(d, rank) {
+		trianglesObject[d.index] = rank;
+	})
+	feature.geometry.coordinates = feature.geometry.coordinates.map(function(point, i) {
+		point[3] = trianglesObject[i];
+		return point;
+	})
+	return feature;
 }
