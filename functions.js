@@ -79,3 +79,44 @@ function getAllPoints(elements, extent, projection) {
 	});
 	return dataPoints;
 }
+
+function filterPoints(point, i) {
+	if (typeof point[2] !== "undefined") {
+		return point[2] > 1
+	} else return point;
+}
+
+function addTriangleSize(feature, projection) {
+	triangles = [];
+	var points = feature.coordinates
+	for (var i=1;i<points.length-1;i++){
+		var point = feature.coordinates[i];
+		triangle = points.slice(i - 1, i + 2);
+		if (triangle[1][2] = area(triangle)) {
+			triangles.push(triangle);
+			// heap.push(triangle);
+		}
+	}
+	var result = feature.coordinates.map(function(lineString) {
+		var points = lineString.map(projection);
+		for (var i = 1, n = lineString.length - 1; i < n; ++i) {
+			triangle = points.slice(i - 1, i + 2);
+			if (triangle[1][2] = area(triangle)) {
+				triangles.push(triangle);
+				// heap.push(triangle);
+			}
+		}
+
+		for (var i = 0, n = triangles.length; i < n; ++i) {
+			triangle = triangles[i];
+			triangle.previous = triangles[i - 1];
+			triangle.next = triangles[i + 1];
+		}
+		return points;
+	});
+	return result;
+}
+
+function area(t) {
+  return Math.abs((t[0][0] - t[2][0]) * (t[1][1] - t[0][1]) - (t[0][0] - t[1][0]) * (t[2][1] - t[0][1]));
+}

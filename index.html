@@ -60,20 +60,14 @@
 	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove");
 
 	function processData(lineData, pointData) {
-		lineSelector.addElements(lineData.features, "Line");
-		// Add an action for the change of the 'lineSelector'
-		lineSelector.option
-			.on("change", function() {
-				var numberOfPoints = lineData.features[parseInt(lineSelector.selectedID())].geometry.coordinates.length
-				if (numberOfPoints > 2) {
-					pointNumberSelector.addElements(d3.range(numberOfPoints-1).map(function(d) {return {properties: {id: d}}}), "");
-				} else {
-					pointNumberSelector.throwException("Nop...number of points is <= 2!");
-				}
-			});
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
+
+		lineData.features.forEach(function(feature) {
+			addTriangleSize(feature.geometry, projection);
+		});
+
 		var path = d3.geo.path()
 				.projection(projection),
 			dataPoints = getAllPoints(lineData, extent, projection);
@@ -106,7 +100,7 @@
 				.enter().append("path")
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line")
-					.attr("id", function(d) { return d.properties.id });
+					.attr("id", function(d) { return "line" + d.properties.id });
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -117,6 +111,29 @@
 					.attr("class", "consPoint");
 
 		transformGroup();
+
+		lineSelector.addElements(lineData.features, "Line");
+		// Add an action for the change of the 'lineSelector'
+		lineSelector.select
+			.on("change", function() {
+				var length = -1;
+				// a hack to get the lenght of the correct line
+				lineGroup.select("#line" + lineSelector.selectedID()).attr("id", function(d) {length = d.geometry.coordinates.length; return "line" + d.properties.id});
+				if (length > 2) {
+					pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
+				} else {
+					pointNumberSelector.throwException("Nop...number of points is <= 2!");
+				}
+				pointNumberSelector.select
+					.on("change", function() {
+						lineGroup.select("#line" + lineSelector.selectedID())
+							.attr("d", function(d) {
+								d.geometry.coordinates = d.geometry.coordinates.filter(filterPoints)
+								return path(d.geometry);
+							});
+					})
+			});
+
 	}
 	// Load lineData & pointData and do visualisations
 	d3.json("lines.json", function(error, lineData) {

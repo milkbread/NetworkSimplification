@@ -35,14 +35,14 @@ function Selector(container, heading_) {
 	self.selector.append("h1").attr("class", "selectorhead").text(heading);
 
 	self.selectedID = function() {
-		return self.option.property("value");
+		return self.select.property("value");
 	}
 
 	self.addElements = function(elements, type) {
 		self.selector.select(".select").remove();
-		self.option = self.selector.append("select").attr("class", "select")
+		self.select = self.selector.append("select").attr("class", "select")
 
-		self.option.selectAll("option")
+		self.select.selectAll("option")
 			.data(elements)
 				.enter().append("option")
 					.attr("value", function(d) { return d.properties.id; })
