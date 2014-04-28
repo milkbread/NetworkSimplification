@@ -25,3 +25,26 @@ function Toolbar(container, groups, heading_) {
 		.text(function(d) { return d.description; })
 		.attr("for", function(d) { return d.name; })
 }
+
+function Selector(container, heading_) {
+	var self = this;
+	var heading = typeof heading_ !== 'undefined' ? heading_ : "Selector";
+
+	self.selector = container.append("div").attr("class", "selector");
+
+	self.selector.append("h1").attr("class", "selectorhead").text(heading);
+
+	self.option = self.selector.append("select")
+
+	self.selectedID = function() {
+		return self.option.property("value");
+	}
+
+	self.addElements = function(elements) {
+		self.option.selectAll("option")
+			.data(elements)
+				.enter().append("option")
+					.attr("value", function(d) { return d.properties.id; })
+					.text( function(d) { return "Line " + d.properties.id; });
+	}
+}
