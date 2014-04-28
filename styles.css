@@ -19,11 +19,11 @@ rect {
 	stroke: none;
 }
 
-.container > div {
+.mainContainer > div {
 	display: inline-block;
 	vertical-align: top;
 }
 
-div > svg {
+#svgContainer {
 	border: dashed 1px;
 }

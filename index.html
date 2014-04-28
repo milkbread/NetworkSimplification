@@ -26,18 +26,18 @@
 	var container = d3.select("body").append("div")
 	    .attr("width", 960)
 	    .attr("height", height)
-	    .attr("class", "container");
-
+	    .attr("class", "mainContainer");
 
 	// prepare the major SVG-Visualisation area
-	var svg = container.append("div").append("svg")
-	    .attr("width", width)
-	    .attr("height", height)
-	    .on("mousedown", startMoving)
-	    .on("mouseup", stopMoving)
-		.call(
-	    	d3.behavior.zoom().on("zoom", reScale)
-		);
+	var svg = container.append("div").attr("id", "svgContainer")
+		.append("svg")
+		    .attr("width", width)
+		    .attr("height", height)
+		    .on("mousedown", startMoving)
+		    .on("mouseup", stopMoving)
+			.call(
+		    	d3.behavior.zoom().on("zoom", reScale)
+			);
 
 	// prepare the SVG-Groups and corresponding object-variables
 	var rectGroup = svg.append("g"),
@@ -53,7 +53,9 @@
 		{name: "consPoints", description: "Constraining points", group: consPointGroup}
 	];
 
-	var toolbar = new Toolbar(container, groups, "Select Elements");
+	// Create some sidebar elements
+	var sidebarContainer = container.append("div").attr("id", "sidebarContainer");
+	var toolbar = new Toolbar(sidebarContainer, groups, "Select Elements");
 
 	function processData(lineData, pointData) {
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
