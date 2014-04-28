@@ -1,7 +1,10 @@
-function Toolbar(container, groups) {
+function Toolbar(container, groups, heading_) {
 	var self = this;
+	var heading = typeof heading_ !== 'undefined' ? heading_ : "Toolbar";
 
 	var toolbar = container.append("div");
+
+	toolbar.append("h1").text(heading);
 
 	var toolbarElements = toolbar.selectAll("input")
 		.data(groups)
