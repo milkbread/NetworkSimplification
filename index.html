@@ -40,17 +40,17 @@
 			);
 
 	// prepare the SVG-Groups and corresponding object-variables
-	var rectGroup = svg.append("g").attr("id", "rectGroup"),
-		pointGroup = svg.append("g").attr("id", "pointGroup"),
+	var rectGroup = svg.append("g").attr("id", "rectGroup").attr("visibility", "hidden"),
+		pointGroup = svg.append("g").attr("id", "pointGroup").attr("visibility", "hidden"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
 		rectangles, points, lines, constrainingPoints;
 
 	var groups = [
-		{name: "rects", description: "Rectangles", group: rectGroup},
-		{name: "points", description: "Points of lines", group: pointGroup},
-		{name: "lines", description: "Lines", group: lineGroup},
-		{name: "consPoints", description: "Constraining points", group: consPointGroup}
+		{name: "rects", description: "Rectangles", group: rectGroup, init:false},
+		{name: "points", description: "Points of lines", group: pointGroup, init:false},
+		{name: "lines", description: "Lines", group: lineGroup, init:true},
+		{name: "consPoints", description: "Constraining points", group: consPointGroup, init:true}
 	];
 
 	// Create some sidebar elements
@@ -86,7 +86,7 @@
 					.attr("x", function(d) { return d.x; })
 					.attr("y", function(d) { return d.y; })
 					.attr("width", function(d) { return d.width; })
-					.attr("height", function(d) { return d.height; })
+					.attr("height", function(d) { return d.height; });
 
 		// Draw all points of the lines
 		points = pointGroup.selectAll(".point")
@@ -118,9 +118,11 @@
 		// Add an action for the change of the 'lineSelector'
 		lineSelector.select
 			.on("change", function() {
+				lineGroup.selectAll(".line")
+					.style("stroke", null);
 				var length = -1;
-				// a hack to get the lenght of the correct line
-				lineGroup.select("#line" + lineSelector.selectedID()).attr("id", function(d) {length = d.geometry.coordinates.length; return "line" + d.properties.id});
+				lineGroup.select("#line" + lineSelector.selectedID())
+					.style("stroke", function(d) {length = d.geometry.coordinates.length; return "#f00";});
 				if (length > 2) {
 					pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
 				} else {

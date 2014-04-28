@@ -13,7 +13,7 @@ function Toolbar(container, groups, heading_) {
 	toolbarElements.append("input")
 		.attr("type", "checkbox")
 		.attr("id", function(d) { return d.name; })
-		.property("checked", true)
+		.property("checked", function(d,i) {return d.init;})
 		.on("change", function(d) {
 			if (d3.select(this).property("checked")) {
 				d.group.attr("visibility", "visible")
