@@ -5,14 +5,20 @@
 	<style type="text/css">
 		rect {
 			fill: none;
-			stroke: #000;
-			stroke-width: .001px;
+			stroke: rgba(0%, 0%, 0%, 1);
 		}
 
 		.point {
 			fill: rgba(20%, 20%, 20%, .3);
 			stroke: none;
 		}
+
+		.line {
+			stroke: rgba(0%, 0%, 0%, .3);
+			fill: none;
+			pointer-events: none;
+		}
+
 	</style>
 </head>
 <body>
@@ -32,7 +38,7 @@
 		groupPositionY = oldgroupPositionY = 0;
 
 
-	// prepar the major SVG-Visualisation area and groups
+	// prepare the major SVG-Visualisation area
 	var svg = d3.select("body").append("svg")
 	    .attr("width", width)
 	    .attr("height", height)
@@ -41,15 +47,20 @@
 		.call(
 	    	d3.behavior.zoom().on("zoom", reScale)
 		);
-	var rectGroup = svg.append("g");
-	var pointGroup = svg.append("g");
-	var points;
+	// prepare the SVG-Groups and corresponding object-variables
+	var rectGroup = svg.append("g"),
+		pointGroup = svg.append("g"),
+		lineGroup = svg.append("g"),
+		groups = [rectGroup, pointGroup, lineGroup],
+		rectangles, points, lines;
 
 	// Load data and do visualisations
 	d3.json("lines.json", function(error, data) {
-		// console.log(data);
 		var extent = getExtent(data); //[[minX, minY], [maxX, maxY]]
-			dataPoints = getAllPoints(data, extent);
+		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
+		var path = d3.geo.path()
+				.projection(projection),
+			dataPoints = getAllPoints(data, extent, projection);
 
 		// Inititialise the quadtree
 		var rawQuadtree = d3.geom.quadtree();
@@ -57,7 +68,7 @@
 		var quadtree = rawQuadtree(dataPoints);
 
 		// Draw all rectangles by using a collapsed quadtree
-		rectGroup.selectAll(".node")
+		rectangles = rectGroup.selectAll(".node")
 		    .data(nodes(quadtree))
 				.enter().append("rect")
 					.attr("x", function(d) { return d.x; })
@@ -65,12 +76,20 @@
 					.attr("width", function(d) { return d.width; })
 					.attr("height", function(d) { return d.height; })
 
+		// Draw all points of the lines
 		points = pointGroup.selectAll(".point")
 			.data(dataPoints)
 				.enter().append("circle")
 					.attr("class", "point")
 					.attr("cx", function(d) { return d[0]; })
 					.attr("cy", function(d) { return d[1]; });
+
+		// Draw all lines
+		lines = lineGroup.selectAll(".line")
+			.data(data.features)
+				.enter().append("path")
+					.attr("d", function(d){ return path(d.geometry); })
+					.attr("class", "line");
 
 		transformGroup();
 	});
@@ -85,11 +104,15 @@
 	}
 
 	function transformGroup() {
-		rectGroup.attr("transform", function(d){
-			return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + (height + groupPositionY) + ")"; });
-		pointGroup.attr("transform", function(d){
-			return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + (height + groupPositionY) + ")"; });
+		// Transform all groups
+		groups.forEach(function(group) {
+			group.attr("transform", function(d){
+				return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + (height + groupPositionY) + ")"; });
+		})
+		// Re-Scale size of points and lines
+		rectangles.style("stroke-width", .1 / groupScale);
 		points.attr("r", 3 / groupScale);
+		lines.style("stroke-width", 1 / groupScale);
 	}
 
 	function startMoving() {
@@ -142,11 +165,11 @@
 		return extent;
   	}
 
-  	function getAllPoints(elements, extent) {
+  	function getAllPoints(elements, extent, projection) {
   		var dataPoints = [];
 		elements.features.forEach(function(feature) {
 			feature.geometry.coordinates.forEach(function(point) {
-				dataPoints.push([(point[0]-extent[0][0]) * scale, (point[1]-extent[0][1]) * scale]);
+				dataPoints.push(projection(point));
 			});
 		});
 		return dataPoints;
