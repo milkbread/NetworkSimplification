@@ -40,14 +40,16 @@
 			);
 
 	// prepare the SVG-Groups and corresponding object-variables
-	var rectGroup = svg.append("g").attr("id", "rectGroup").attr("visibility", "hidden"),
+	var qGroupLines = svg.append("g").attr("id", "qGroupLines").attr("visibility", "hidden"),
+		qGroupPoints = svg.append("g").attr("id", "qGroupPoints").attr("visibility", "hidden"),
 		pointGroup = svg.append("g").attr("id", "pointGroup").attr("visibility", "hidden"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		rectangles, points, lines, constrainingPoints;
+		qRectLines, qRectPoints, points, lines, constrainingPoints;
 
 	var groups = [
-		{name: "rects", description: "Rectangles", group: rectGroup, init:false},
+		{name: "quadtreeLines", description: "Quadtree - lines", group: qGroupLines, init:false},
+		{name: "quadtreePoints", description: "Quadtree - points", group: qGroupPoints, init:false},
 		{name: "points", description: "Points of lines", group: pointGroup, init:false},
 		{name: "lines", description: "Lines", group: lineGroup, init:true},
 		{name: "consPoints", description: "Constraining points", group: consPointGroup, init:true}
@@ -72,16 +74,26 @@
 
 		var path = d3.geo.path()
 				.projection(projection),
-			dataPoints = getAllPoints(lineData, extent, projection);
+			linesDataPoints = getAllPoints(lineData, projection),
+			consDataPoints = getAllPoints(pointData, projection);
 
 		// Inititialise the quadtree
 		var rawQuadtree = d3.geom.quadtree();
 		// rawQuadtree.extent(extent)			//can generate: 'Maximum call stack size exceeded'
-		var quadtree = rawQuadtree(dataPoints);
+		var quadtreeLines = rawQuadtree(linesDataPoints);
+		var quadtreePoints = rawQuadtree(consDataPoints);
 
 		// Draw all rectangles by using a collapsed quadtree
-		rectangles = rectGroup.selectAll(".node")
-		    .data(nodes(quadtree))
+		qRectLines = qGroupLines.selectAll(".node")
+		    .data(nodes(quadtreeLines))
+				.enter().append("rect")
+					.attr("x", function(d) { return d.x; })
+					.attr("y", function(d) { return d.y; })
+					.attr("width", function(d) { return d.width; })
+					.attr("height", function(d) { return d.height; });
+
+		qRectPoints = qGroupPoints.selectAll(".node")
+		    .data(nodes(quadtreePoints))
 				.enter().append("rect")
 					.attr("x", function(d) { return d.x; })
 					.attr("y", function(d) { return d.y; })
@@ -90,7 +102,7 @@
 
 		// Draw all points of the lines
 		points = pointGroup.selectAll(".point")
-			.data(dataPoints)
+			.data(linesDataPoints)
 				.enter().append("circle")
 					.attr("class", "point")
 					.attr("cx", function(d) { return d[0]; })

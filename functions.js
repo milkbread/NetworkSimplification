@@ -14,7 +14,8 @@ function transformGroup() {
 			return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + ((height - 10) + groupPositionY) + ")"; });
 	})
 	// Re-Scale size of points and lines
-	rectangles.style("stroke-width", .1 / groupScale);
+	qRectLines.style("stroke-width", .1 / groupScale);
+	qRectPoints.style("stroke-width", .1 / groupScale);
 	points.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);
@@ -70,12 +71,16 @@ function getExtent(elements) {
 	return extent;
 }
 
-function getAllPoints(elements, extent, projection) {
+function getAllPoints(elements, projection) {
 	var dataPoints = [];
 	elements.features.forEach(function(feature) {
-		feature.geometry.coordinates.forEach(function(point) {
-			dataPoints.push(projection(point));
-		});
+		if (feature.geometry.type === "LineString") {
+			feature.geometry.coordinates.forEach(function(point) {
+				dataPoints.push(projection(point));
+			});
+		} else if (feature.geometry.type === "Point") {
+			dataPoints.push(projection(feature.geometry.coordinates));
+		}
 	});
 	return dataPoints;
 }
