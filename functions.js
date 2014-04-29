@@ -87,6 +87,7 @@ function transformGroup() {
 	points.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);
+	labels.attr("font-size", 14 / groupScale);
 }
 
 // Action when mouse-movement has started

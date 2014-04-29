@@ -47,8 +47,9 @@
 		boundariesGroup = svg.append("g").attr("id", "boundariesGroup"),
 		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
+		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		qRectLines, qRectPoints, points, lines, constrainingPoints;
+		qRectLines, qRectPoints, points, lines, constrainingPoints, labels;
 
 	// Build an array of group-objects
 	var groups = [
@@ -64,6 +65,10 @@
 			description: "Boundaries of Lines",
 			svgGroup: boundariesGroup,
 			visibility: "hidden"},
+		{	name: "labels",
+			description: "Labels of Lines",
+			svgGroup: labelGroup,
+			visibility: "visible"},
 		{	name: "points",
 			description: "Points of lines",
 			svgGroup: pointGroup,
@@ -156,6 +161,15 @@
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line")
 					.attr("id", function(d) { return "line" + d.properties.id });
+
+		// Draw the labels of the lines
+		labels = labelGroup.selectAll(".label")
+			.data(lineData.features)
+				.enter().append("text")
+					.attr("x", function(d) { return projection(d.geometry.coordinates[parseInt((d.geometry.coordinates.length)/2)])[0]; })
+					.attr("y", function(d) { return projection(d.geometry.coordinates[parseInt((d.geometry.coordinates.length)/2)])[1]; })
+					.text( function (d) { return d.properties.id; })
+					.attr("class", "label");
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
