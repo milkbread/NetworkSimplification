@@ -6,6 +6,7 @@
 	<link rel="stylesheet" href="styles.css" />
 	<script src="sidebar.js"></script>
 	<link rel="stylesheet" href="sidebar.css" />
+	<script src="simplify.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -87,10 +88,12 @@
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
+		var simplify = d3.simplify().projection(projection);
 
 		// Add area of triangle to each feature
 		lineData.features.forEach(function(feature) {
-			addTriangleSize(feature.geometry, projection);
+			simplify(feature.geometry)
+			// addTriangleSize(feature.geometry, projection);
 			feature = rankAfterTriangles(feature);
 		});
 
