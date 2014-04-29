@@ -169,7 +169,8 @@
 					.attr("x", function(d) { return projection(d.geometry.coordinates[parseInt((d.geometry.coordinates.length)/2)])[0]; })
 					.attr("y", function(d) { return projection(d.geometry.coordinates[parseInt((d.geometry.coordinates.length)/2)])[1]; })
 					.text( function (d) { return d.properties.id; })
-					.attr("class", "label");
+					.attr("class", "label")
+					.attr("id", function(d) { return "label" + d.properties.id });
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")

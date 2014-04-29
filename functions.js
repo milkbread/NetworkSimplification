@@ -11,10 +11,13 @@ function nodes(quadtree) {
 function addSimplificationSelector(id, path, projection) {
 	// 'un-highlight' all lines
 	lineGroup.selectAll(".line").classed("selected", false);
+	labelGroup.selectAll(".label").classed("selected", false);
 	// highlight the selected line ... and a HACK: get the number of points from that line
 	var length = -1;
 	lineGroup.select("#line" + id)
 		.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
+	labelGroup.select("#label" + id)
+		.classed("selected", true);
 	// show the 'selector' of the point number to remove ... only if line has more than 2 points
 	if (length > 2) {
 		pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
