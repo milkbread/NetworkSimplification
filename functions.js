@@ -7,6 +7,36 @@ function nodes(quadtree) {
   return nodes;
 }
 
+// Add the selector for the number of points to remove (when a line was selected) and implement filtering
+function addSimplificationSelector(id, path) {
+	// 'un-highlight' all lines
+	lineGroup.selectAll(".line").classed("selected", false);
+	// highlight the selected line ... and a HACK: get the number of points from that line
+	var length = -1;
+	lineGroup.select("#line" + id)
+		.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
+	// show the 'selector' of the point number to remove ... only if line has more than 2 points
+	if (length > 2) {
+		pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
+	} else {
+		// throw error otherwise
+		pointNumberSelector.throwException("Nop...number of points is <= 2!");
+	}
+	pointNumberSelector.select
+		.on("change", function() {
+			var numberOfPoints = pointNumberSelector.selectedID()
+			lineGroup.select("#line" + id)
+				.attr("d", function(d) {
+					return path({
+						type: d.geometry.type,
+						coordinates: d.geometry.coordinates.filter(function(point) {
+							return filterPoints(point, numberOfPoints);
+						})
+					});
+				});
+		})
+}
+
 function transformGroup() {
 	// Transform all groups
 	groups.forEach(function(group) {

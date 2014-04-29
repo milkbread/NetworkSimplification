@@ -83,7 +83,7 @@
 		var quadtreeLines = rawQuadtree(linesDataPoints);
 		var quadtreePoints = rawQuadtree(consDataPoints);
 
-		// Draw all rectangles by using a collapsed quadtree
+		// Draw the rectangles of the quadtree of all points of all lines
 		qRectLines = qGroupLines.selectAll(".node")
 		    .data(nodes(quadtreeLines))
 				.enter().append("rect")
@@ -92,6 +92,7 @@
 					.attr("width", function(d) { return d.width; })
 					.attr("height", function(d) { return d.height; });
 
+		// Draw the rectangles of the quadtree of the constraining points
 		qRectPoints = qGroupPoints.selectAll(".node")
 		    .data(nodes(quadtreePoints))
 				.enter().append("rect")
@@ -126,14 +127,16 @@
 
 		transformGroup();
 
+		// Add the line-selector to the sidebar and add action for the selected line
 		lineSelector.addElements(lineData.features, "Line");
-		// Add an action for the change of the 'lineSelector'
 		lineSelector.select
+			// Add an action for the change of the 'lineSelector'
 			.on("change", function() {
-				processSelectors(lineSelector.selectedID(), path);
+				addSimplificationSelector(lineSelector.selectedID(), path);
 			});
 
-		processSelectors(1, path)
+		// initially select the first line
+		addSimplificationSelector(1, path)
 
 	}
 	// Load lineData & pointData and do visualisations
@@ -143,35 +146,6 @@
 		});
 	});
 
-
-	function processSelectors(id, path) {
-		// 'un-highlight' all lines
-		lineGroup.selectAll(".line").classed("selected", false);
-		// highlight the selected line ... and a HACK: get the number of points from that line
-		var length = -1;
-		lineGroup.select("#line" + id)
-			.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
-		// show the 'selector' of the point number to remove ... only if line has more than 2 points
-		if (length > 2) {
-			pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
-		} else {
-			// throw error otherwise
-			pointNumberSelector.throwException("Nop...number of points is <= 2!");
-		}
-		pointNumberSelector.select
-			.on("change", function() {
-				var numberOfPoints = pointNumberSelector.selectedID()
-				lineGroup.select("#line" + id)
-					.attr("d", function(d) {
-						return path({
-							type: d.geometry.type,
-							coordinates: d.geometry.coordinates.filter(function(point) {
-								return filterPoints(point, numberOfPoints);
-							})
-						});
-					});
-			})
-	}
 </script>
 </body>
 </html>
