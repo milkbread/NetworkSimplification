@@ -42,11 +42,11 @@
 
 	// prepare the SVG-Groups and corresponding object-variables
 	var qGroupLines = svg.append("g").attr("id", "qGroupLines"),
+		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
 		qGroupPoints = svg.append("g").attr("id", "qGroupPoints"),
 		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
 		qRectLines, qRectPoints, points, lines, constrainingPoints;
 
 	// Build an array of group-objects

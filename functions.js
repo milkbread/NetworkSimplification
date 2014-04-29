@@ -22,39 +22,47 @@ function addSimplificationSelector(id, path, projection) {
 		// throw error otherwise
 		pointNumberSelector.throwException("Nop...number of points is <= 2!");
 	}
+	// Remove all drawn triangles
+	triangleGroup.selectAll(".triangle").remove();
 	pointNumberSelector.select
 		.on("change", function() {
 			var numberOfPoints = pointNumberSelector.selectedID()
 			lineGroup.select("#line" + id)
 				.attr("d", function(d) {
-					triangleGroup.selectAll(".triangle").remove();
-					var newCoordinates = d.geometry.coordinates.filter(function(point, i) {
-											return filterPoints(point, numberOfPoints, projection, path);
-										})
+					// remove the class 'current' from all triangles
+					triangleGroup.selectAll(".triangle").classed("current", false);
 					return path({
 						type: d.geometry.type,
-						coordinates: newCoordinates
+						coordinates: d.geometry.coordinates.filter(
+							function(point, i) {
+								return filterPoints(point, numberOfPoints, projection, path, i);
+							})
 					});
 				});
 		})
 }
 
-function filterPoints(point, numberOfPoints, projection, path) {
+function filterPoints(point, numberOfPoints, projection, path, i) {
 	if (typeof point[2] !== "undefined") {
-		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
-			// triangleGroup.append("circle")
-			// 	.attr("class", "point")
-			// 	.attr("cx", projection(point)[0])
-			// 	.attr("cy", projection(point)[1])
-			// 	.attr("r", 5);
-			var triangleCoords = point[2].triangle.map(function(d) {return [d[0],d[1]]});
+		// Draw the triangle of the point that was removed last (as its rank is identic with the 'numberOfPoints' to remove)
+		if (point[2].rank === parseInt(numberOfPoints) + 1) {
+			var triangleCoords = point[2].triangle;
 			triangleCoords.push(triangleCoords[0])
-			triangleGroup.append("path")
+			// Check if we have already drawn that triangle
+			var currentTriangle = triangleGroup.select("#triangle"+i);
+			if (currentTriangle.empty()) {
+				// ...append it if not
+				currentTriangle = triangleGroup.append("path")
+					.attr("class", "triangle")
+					.attr("id", "triangle"+i);
+			}
+			// define the coordinates of the triangle visualisation and highlight it as 'current'
+			currentTriangle
 				.attr("d", path({
 					type: "Polygon",
 					coordinates: [triangleCoords]
 				}))
-				.attr("class", "triangle");
+				.classed("current", true);
 		}
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
