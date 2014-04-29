@@ -27,25 +27,28 @@ function addSimplificationSelector(id, path, projection) {
 			var numberOfPoints = pointNumberSelector.selectedID()
 			lineGroup.select("#line" + id)
 				.attr("d", function(d) {
-					triangleGroup.selectAll(".point").remove();
+					triangleGroup.selectAll(".triangle").remove();
 					return path({
 						type: d.geometry.type,
 						coordinates: d.geometry.coordinates.filter(function(point) {
-							return filterPoints(point, numberOfPoints, projection);
+							return filterPoints(point, numberOfPoints, projection, path);
 						})
 					});
 				});
 		})
 }
 
-function filterPoints(point, numberOfPoints, projection) {
+function filterPoints(point, numberOfPoints, projection, path) {
 	if (typeof point[2] !== "undefined") {
 		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
-			triangleGroup.append("circle")
-				.attr("class", "point")
-				.attr("cx", projection(point)[0])
-				.attr("cy", projection(point)[1])
-				.attr("r", 5);
+			var triangleCoords = point[2].triangle.map(function(d) {return [d[0],d[1]]});
+			triangleCoords.push(triangleCoords[0])
+			triangleGroup.append("path")
+				.attr("d", path({
+					type: "Polygon",
+					coordinates: [triangleCoords]
+				}))
+				.attr("class", "triangle");
 		}
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
