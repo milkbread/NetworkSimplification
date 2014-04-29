@@ -47,12 +47,28 @@
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
 		qRectLines, qRectPoints, points, lines, constrainingPoints;
 
+	// Build an array of group-objects
 	var groups = [
-		{name: "quadtreeLines", description: "Quadtree - lines", group: qGroupLines, init:false},
-		{name: "quadtreePoints", description: "Quadtree - points", group: qGroupPoints, init:false},
-		{name: "points", description: "Points of lines", group: pointGroup, init:false},
-		{name: "lines", description: "Lines", group: lineGroup, init:true},
-		{name: "consPoints", description: "Constraining points", group: consPointGroup, init:true}
+		{	name: "quadtreeLines",
+			description: "Quadtree - lines",
+			group: qGroupLines,
+			init:false},
+		{	name: "quadtreePoints",
+			description: "Quadtree - points",
+			group: qGroupPoints,
+			init:false},
+		{	name: "points",
+			description: "Points of lines",
+			group: pointGroup,
+			init:false},
+		{	name: "lines",
+			description: "Lines",
+			group: lineGroup,
+			init:true},
+		{	name: "consPoints",
+			description: "Constraining points",
+			group: consPointGroup,
+			init:true}
 	];
 
 	// Create some sidebar elements
@@ -61,7 +77,8 @@
 	var lineSelector = new Selector(sidebarContainer, "Select a line");
 	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove");
 
-	function processData(lineData, pointData) {
+	// Render all geometries in the corresponding groups
+	function renderData(lineData, pointData) {
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
@@ -142,7 +159,7 @@
 	// Load lineData & pointData and do visualisations
 	d3.json("lines.json", function(error, lineData) {
 		d3.json("points.json", function(error, pointData) {
-			processData(lineData, pointData);
+			renderData(lineData, pointData);
 		});
 	});
 
