@@ -8,7 +8,7 @@ function nodes(quadtree) {
 }
 
 // Add the selector for the number of points to remove (when a line was selected) and implement filtering
-function addSimplificationSelector(id, path) {
+function addSimplificationSelector(id, path, projection) {
 	// 'un-highlight' all lines
 	lineGroup.selectAll(".line").classed("selected", false);
 	// highlight the selected line ... and a HACK: get the number of points from that line
@@ -27,14 +27,28 @@ function addSimplificationSelector(id, path) {
 			var numberOfPoints = pointNumberSelector.selectedID()
 			lineGroup.select("#line" + id)
 				.attr("d", function(d) {
+					triangleGroup.selectAll(".point").remove();
 					return path({
 						type: d.geometry.type,
 						coordinates: d.geometry.coordinates.filter(function(point) {
-							return filterPoints(point, numberOfPoints);
+							return filterPoints(point, numberOfPoints, projection);
 						})
 					});
 				});
 		})
+}
+
+function filterPoints(point, numberOfPoints, projection) {
+	if (typeof point[2] !== "undefined") {
+		if (point[3] <= parseInt(numberOfPoints) + 1) {
+			triangleGroup.append("circle")
+				.attr("class", "point")
+				.attr("cx", projection(point)[0])
+				.attr("cy", projection(point)[1])
+				.attr("r", 5);
+		}
+		return point[3] > parseInt(numberOfPoints) + 1;
+	} else return point;
 }
 
 // Transform all groups in relation to new values:
@@ -135,42 +149,18 @@ function getAllPoints(geoJsonData, projection) {
 	return dataPoints;
 }
 
-function filterPoints(point, numberOfPoints) {
-	if (typeof point[2] !== "undefined") {
-		return point[3] > parseInt(numberOfPoints) + 1;
-	} else return point;
-}
-
 // Function to calculate the area of the triangle of one certain point
 // snippet taken from: http://bost.ocks.org/mike/simplify/
 function addTriangleSize(feature, projection) {
 	// !!!Works only for 'LineStrings' currently!!!
-	triangles = [];
 	var points = feature.coordinates
 	for (var i=1;i<points.length-1;i++){
 		var point = feature.coordinates[i];
 		triangle = points.slice(i - 1, i + 2);
-		if (triangle[1][2] = area(triangle)) {
-			triangles.push(triangle);
-		}
+		point[2] = area(triangle);
+		point[4] = triangle;
 	}
-	var result = feature.coordinates.map(function(lineString) {
-		var points = lineString.map(projection);
-		for (var i = 1, n = lineString.length - 1; i < n; ++i) {
-			triangle = points.slice(i - 1, i + 2);
-			if (triangle[1][2] = area(triangle)) {
-				triangles.push(triangle);
-			}
-		}
-
-		for (var i = 0, n = triangles.length; i < n; ++i) {
-			triangle = triangles[i];
-			triangle.previous = triangles[i - 1];
-			triangle.next = triangles[i + 1];
-		}
-		return points;
-	});
-	return result;
+	return feature.coordinates;
 }
 
 // Calculate the area

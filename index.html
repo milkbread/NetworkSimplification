@@ -45,6 +45,7 @@
 		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
+		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
 		qRectLines, qRectPoints, points, lines, constrainingPoints;
 
 	// Build an array of group-objects
@@ -56,7 +57,7 @@
 		{	name: "quadtreePoints",
 			description: "Quadtree - points",
 			svgGroup: qGroupPoints,
-			visibility: "hidden"},
+			visibility: "visible"},
 		{	name: "points",
 			description: "Points of lines",
 			svgGroup: pointGroup,
@@ -68,6 +69,10 @@
 		{	name: "consPoints",
 			description: "Constraining points",
 			svgGroup: consPointGroup,
+			visibility: "visible"},
+		{	name: "triangle",
+			description: "Current Triangle",
+			svgGroup: triangleGroup,
 			visibility: "visible"}
 	];
 
@@ -149,11 +154,11 @@
 		lineSelector.select
 			// Add an action for the change of the 'lineSelector'
 			.on("change", function() {
-				addSimplificationSelector(lineSelector.selectedID(), path);
+				addSimplificationSelector(lineSelector.selectedID(), path, projection);
 			});
 
 		// initially select the first line
-		addSimplificationSelector(1, path)
+		addSimplificationSelector(1, path, projection)
 
 	}
 	// Load lineData & pointData and do visualisations
