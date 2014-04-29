@@ -76,7 +76,7 @@ function transformGroup() {
 	groups.forEach(function(group) {
 		group.svgGroup
 			.attr("transform", function(d){
-				return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + ((height - 10) + groupPositionY) + ")";
+				return "scale("+groupScale+", "+groupScale+") translate("+groupPositionX+"," + ((height - 10) + groupPositionY) + ")";
 			});
 	})
 

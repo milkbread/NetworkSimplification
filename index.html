@@ -92,7 +92,7 @@
 	function renderData(lineData, pointData) {
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
-		function projection(d) { return [(d[0]-extent[0][0]) * scale, (d[1]-extent[0][1]) * scale]; }
+		function projection(d) { return [(d[0]-extent[0][0]) * scale, -1 * ((d[1]-extent[0][1]) * scale)]; }
 		var simplify = d3.simplify().projection(projection);
 
 		// Add area of triangle to each feature
