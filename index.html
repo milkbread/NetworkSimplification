@@ -102,7 +102,8 @@
 				.enter().append("path")
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line")
-					.attr("id", function(d) { return "line" + d.properties.id });
+					.attr("id", function(d) { return "line" + d.properties.id })
+					.classed("selected", function(d,i) {if (i===0) return true; else return false;});
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -119,10 +120,10 @@
 		lineSelector.select
 			.on("change", function() {
 				lineGroup.selectAll(".line")
-					.style("stroke", null);
+					.classed("selected", false);
 				var length = -1;
 				lineGroup.select("#line" + lineSelector.selectedID())
-					.style("stroke", function(d) {length = d.geometry.coordinates.length; return "#f00";});
+					.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
 				if (length > 2) {
 					pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
 				} else {

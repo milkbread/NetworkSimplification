@@ -14,6 +14,10 @@ rect {
 	pointer-events: none;
 }
 
+.selected {
+	stroke: rgba(100%, 0%, 0%, 1);
+}
+
 .consPoint {
 	fill: rgba(100%, 0%, 0%, .7);
 	stroke: none;
