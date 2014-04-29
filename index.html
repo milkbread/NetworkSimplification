@@ -170,7 +170,13 @@
 					.attr("y", function(d) { return projection(d.geometry.coordinates[parseInt((d.geometry.coordinates.length)/2)])[1]; })
 					.text( function (d) { return d.properties.id; })
 					.attr("class", "label")
-					.attr("id", function(d) { return "label" + d.properties.id });
+					.attr("id", function(d) { return "label" + d.properties.id })
+					.attr("value", function(d) { return d.properties.id })
+					.on("click", function() {
+						var selID = parseInt(d3.select(this).attr("value"));
+						addSimplificationSelector(selID, path, projection);
+						lineSelector.setSelectedID(selID)
+					});
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -190,8 +196,9 @@
 				addSimplificationSelector(lineSelector.selectedID(), path, projection);
 			});
 
+
 		// initially select the first line
-		addSimplificationSelector(1, path, projection)
+		addSimplificationSelector(1, path, projection);
 
 	}
 	// Load lineData & pointData and do visualisations

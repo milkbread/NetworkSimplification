@@ -54,6 +54,10 @@ function Selector(container, heading_) {
 		return self.select.property("value");
 	}
 
+	self.setSelectedID = function(id) {
+		self.select.property("value", id);
+	}
+
 	self.addElements = function(elements, type) {
 		self.selector.select(".select").remove();
 		self.select = self.selector.append("select").attr("class", "select")
