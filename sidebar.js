@@ -12,18 +12,34 @@ function Toolbar(container, groups, heading_) {
 
 	toolbarElements.append("input")
 		.attr("type", "checkbox")
-		.attr("id", function(d) { return d.name; })
-		.property("checked", function(d,i) {return d.init;})
-		.on("change", function(d) {
+		.attr("id", function(group) { return group.name; })
+		.property("checked", function(group,i) {return group.visibility === "visible" ? true : false;})
+		.on("change", function(group) {
+			// Update the visibility-element of the group-object
 			if (d3.select(this).property("checked")) {
-				d.group.attr("visibility", "visible")
+				group.visibility = "visible";
 			} else {
-				d.group.attr("visibility", "hidden")
+				group.visibility = "hidden";
 			}
+			// Update the visibility of the group-object 'svgGroup'
+			group.svgGroup
+				.attr("visibility", function() {
+					return group.visibility;
+				});
 		})
 	toolbarElements.append("label")
-		.text(function(d) { return d.description; })
-		.attr("for", function(d) { return d.name; })
+		.text(function(group) { return group.description; })
+		.attr("for", function(group) { return group.name; })
+
+	self.initGroupVisibility = function() {
+		groups.forEach(function(group) {
+			group.svgGroup
+				.attr("visibility", function() {
+					return group.visibility;
+				});
+		})
+	}
+	self.initGroupVisibility();
 }
 
 function Selector(container, heading_) {

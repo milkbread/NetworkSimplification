@@ -43,9 +43,12 @@ function addSimplificationSelector(id, path) {
 function transformGroup() {
 	// Transform all groups
 	groups.forEach(function(group) {
-		group.group.attr("transform", function(d){
-			return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + ((height - 10) + groupPositionY) + ")"; });
+		group.svgGroup
+			.attr("transform", function(d){
+				return "scale("+groupScale+", -"+groupScale+") translate("+groupPositionX+",-" + ((height - 10) + groupPositionY) + ")";
+			});
 	})
+
 	// Re-Scale size of points and lines
 	qRectLines.style("stroke-width", .1 / groupScale);
 	qRectPoints.style("stroke-width", .1 / groupScale);

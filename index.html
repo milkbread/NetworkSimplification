@@ -40,9 +40,9 @@
 			);
 
 	// prepare the SVG-Groups and corresponding object-variables
-	var qGroupLines = svg.append("g").attr("id", "qGroupLines").attr("visibility", "hidden"),
-		qGroupPoints = svg.append("g").attr("id", "qGroupPoints").attr("visibility", "hidden"),
-		pointGroup = svg.append("g").attr("id", "pointGroup").attr("visibility", "hidden"),
+	var qGroupLines = svg.append("g").attr("id", "qGroupLines"),
+		qGroupPoints = svg.append("g").attr("id", "qGroupPoints"),
+		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
 		qRectLines, qRectPoints, points, lines, constrainingPoints;
@@ -51,24 +51,24 @@
 	var groups = [
 		{	name: "quadtreeLines",
 			description: "Quadtree - lines",
-			group: qGroupLines,
-			init:false},
+			svgGroup: qGroupLines,
+			visibility: "hidden"},
 		{	name: "quadtreePoints",
 			description: "Quadtree - points",
-			group: qGroupPoints,
-			init:false},
+			svgGroup: qGroupPoints,
+			visibility: "hidden"},
 		{	name: "points",
 			description: "Points of lines",
-			group: pointGroup,
-			init:false},
+			svgGroup: pointGroup,
+			visibility: "hidden"},
 		{	name: "lines",
 			description: "Lines",
-			group: lineGroup,
-			init:true},
+			svgGroup: lineGroup,
+			visibility: "visible"},
 		{	name: "consPoints",
 			description: "Constraining points",
-			group: consPointGroup,
-			init:true}
+			svgGroup: consPointGroup,
+			visibility: "visible"}
 	];
 
 	// Create some sidebar elements
