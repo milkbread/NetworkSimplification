@@ -40,14 +40,14 @@ function addSimplificationSelector(id, path, projection) {
 
 function filterPoints(point, numberOfPoints, projection) {
 	if (typeof point[2] !== "undefined") {
-		if (point[3] <= parseInt(numberOfPoints) + 1) {
+		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
 			triangleGroup.append("circle")
 				.attr("class", "point")
 				.attr("cx", projection(point)[0])
 				.attr("cy", projection(point)[1])
 				.attr("r", 5);
 		}
-		return point[3] > parseInt(numberOfPoints) + 1;
+		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
 
@@ -157,8 +157,7 @@ function addTriangleSize(feature, projection) {
 	for (var i=1;i<points.length-1;i++){
 		var point = feature.coordinates[i];
 		triangle = points.slice(i - 1, i + 2);
-		point[2] = area(triangle);
-		point[4] = triangle;
+		point[2] = {area: area(triangle), triangle: triangle};
 	}
 	return feature.coordinates;
 }
@@ -177,7 +176,7 @@ function area(t) {
 function rankAfterTriangles(feature) {
 	// 1:
 	var triangles = feature.geometry.coordinates.map(function(d, i) {
-		return {area: typeof d[2] !== "undefined" ? d[2] : -1, index: i};
+		return {area: typeof d[2] !== "undefined" ? d[2].area : -1, index: i};
 	})
 	// 2:
 	triangles.sort(function(a, b) {
@@ -190,7 +189,7 @@ function rankAfterTriangles(feature) {
 	})
 	// 4:
 	feature.geometry.coordinates = feature.geometry.coordinates.map(function(point, i) {
-		point[3] = trianglesObject[i];
+		if (typeof point[2] !== "undefined") point[2].rank = trianglesObject[i];
 		return point;
 	})
 	return feature;
