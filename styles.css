@@ -24,8 +24,8 @@ rect {
 }
 
 .triangle {
-	fill: #f0f;
-	stroke: rgba(100%, 0%, 0%, 1);
+	fill: rgba(0%, 100%, 0%, .7);
+	stroke: none;
 }
 
 .mainContainer > div {
