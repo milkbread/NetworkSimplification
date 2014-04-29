@@ -16,6 +16,7 @@ d3.simplify = function() {
         for (var i = 1, n = feature.coordinates.length - 1; i < n; ++i) {
           triangle = points.slice(i - 1, i + 2);
           if (triangle[1][2] = area(triangle)) {
+            triangle[1][3] = triangle;
             triangles.push(triangle);
             heap.push(triangle);
           }
@@ -44,6 +45,7 @@ d3.simplify = function() {
         update(triangle.previous);
       } else {
         triangle[0][2] = triangle[1][2];
+        triangle[0][3] = triangle[1][3];
       }
 
       if (triangle.next) {
@@ -52,12 +54,14 @@ d3.simplify = function() {
         update(triangle.next);
       } else {
         triangle[2][2] = triangle[1][2];
+        triangle[2][3] = triangle[1][3];
       }
     }
 
     function update(triangle) {
       heap.remove(triangle);
       triangle[1][2] = area(triangle);
+      triangle[1][3] = triangle;
       heap.push(triangle);
     }
 
@@ -138,7 +142,6 @@ function minHeap() {
       array[object.index = i = down] = object;
     }
   }
-
   return heap;
 }
 

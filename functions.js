@@ -27,7 +27,7 @@ function addSimplificationSelector(id, path, projection) {
 			var numberOfPoints = pointNumberSelector.selectedID()
 			lineGroup.select("#line" + id)
 				.attr("d", function(d) {
-					triangleGroup.selectAll(".point").remove();
+					triangleGroup.selectAll(".triangle").remove();
 					var newCoordinates = d.geometry.coordinates.filter(function(point, i) {
 											return filterPoints(point, numberOfPoints, projection, path);
 										})
@@ -42,19 +42,19 @@ function addSimplificationSelector(id, path, projection) {
 function filterPoints(point, numberOfPoints, projection, path) {
 	if (typeof point[2] !== "undefined") {
 		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
-			triangleGroup.append("circle")
-				.attr("class", "point")
-				.attr("cx", projection(point)[0])
-				.attr("cy", projection(point)[1])
-				.attr("r", 5);
-		// 	var triangleCoords = point[2].triangle.map(function(d) {return [d[0],d[1]]});
-		// 	triangleCoords.push(triangleCoords[0])
-		// 	triangleGroup.append("path")
-		// 		.attr("d", path({
-		// 			type: "Polygon",
-		// 			coordinates: [triangleCoords]
-		// 		}))
-		// 		.attr("class", "triangle");
+			// triangleGroup.append("circle")
+			// 	.attr("class", "point")
+			// 	.attr("cx", projection(point)[0])
+			// 	.attr("cy", projection(point)[1])
+			// 	.attr("r", 5);
+			var triangleCoords = point[2].triangle.map(function(d) {return [d[0],d[1]]});
+			triangleCoords.push(triangleCoords[0])
+			triangleGroup.append("path")
+				.attr("d", path({
+					type: "Polygon",
+					coordinates: [triangleCoords]
+				}))
+				.attr("class", "triangle");
 		}
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
@@ -178,18 +178,22 @@ function area(t) {
 
 // Add a ranking to each point
 // Logic:
+// 			0. - clean data: remove area from first and last point AND build object at point[2]
 // 			1. - push all triangle-areas into an array
 // 			2. - sort the array
 // 			3. - make an indexed object from the sorted array {id0: rank, id1: rank, ..., idN: rank}
 // 			4. - add the rank to each point (point[3]), by using the indexed object
 function rankAfterTriangles(feature) {
+	// 0:
 	var length = feature.geometry.coordinates.length;
 	feature.geometry.coordinates = feature.geometry.coordinates.map(function(point, i) {
-		point[2] = {area: point[2]};
 		if (i===0 || i===length-1){
 			return [point[0], point[1]];
-		} else return point;
+		} else {
+			return [point[0], point[1], {area: point[2], triangle: point[3]}];
+		}
 	})
+	// console.log(feature.geometry.coordinates)
 	// 1:
 	var triangles = feature.geometry.coordinates.map(function(d, i) {
 		return {area: typeof d[2] !== "undefined" ? d[2].area : -1, index: i};
