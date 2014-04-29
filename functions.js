@@ -83,6 +83,7 @@ function transformGroup() {
 	// Re-Scale size of points and lines
 	qRectLines.style("stroke-width", .1 / groupScale);
 	qRectPoints.style("stroke-width", .1 / groupScale);
+	boundaries.style("stroke-width", .1 / groupScale);
 	points.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);

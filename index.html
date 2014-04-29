@@ -44,6 +44,7 @@
 	var qGroupLines = svg.append("g").attr("id", "qGroupLines"),
 		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
 		qGroupPoints = svg.append("g").attr("id", "qGroupPoints"),
+		boundariesGroup = svg.append("g").attr("id", "boundariesGroup"),
 		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
@@ -58,6 +59,10 @@
 		{	name: "quadtreePoints",
 			description: "Quadtree - points",
 			svgGroup: qGroupPoints,
+			visibility: "hidden"},
+		{	name: "boundaries",
+			description: "Boundaries of Lines",
+			svgGroup: boundariesGroup,
 			visibility: "hidden"},
 		{	name: "points",
 			description: "Points of lines",
@@ -125,6 +130,16 @@
 					.attr("y", function(d) { return d.y; })
 					.attr("width", function(d) { return d.width; })
 					.attr("height", function(d) { return d.height; });
+
+		// Draw the boundaries of all lines
+		boundaries = boundariesGroup.selectAll(".node")
+			.data(lineData.features)
+				.enter().append("rect")
+					.attr("x", function(d) { return path.bounds(d.geometry)[0][0]; })
+					.attr("y", function(d) { return path.bounds(d.geometry)[0][1]; })
+					.attr("width", function(d) { return path.bounds(d.geometry)[1][0] - path.bounds(d.geometry)[0][0]; })
+					.attr("height", function(d) { return path.bounds(d.geometry)[1][1] - path.bounds(d.geometry)[0][1]; })
+					.attr("class", "node");
 
 		// Draw all points of the lines
 		points = pointGroup.selectAll(".point")
