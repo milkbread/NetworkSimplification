@@ -114,8 +114,7 @@
 				.enter().append("path")
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line")
-					.attr("id", function(d) { return "line" + d.properties.id })
-					.classed("selected", function(d,i) {if (i===0) return true; else return false;});
+					.attr("id", function(d) { return "line" + d.properties.id });
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -131,30 +130,10 @@
 		// Add an action for the change of the 'lineSelector'
 		lineSelector.select
 			.on("change", function() {
-				lineGroup.selectAll(".line")
-					.classed("selected", false);
-				var length = -1;
-				lineGroup.select("#line" + lineSelector.selectedID())
-					.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
-				if (length > 2) {
-					pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
-				} else {
-					pointNumberSelector.throwException("Nop...number of points is <= 2!");
-				}
-				pointNumberSelector.select
-					.on("change", function() {
-						var numberOfPoints = pointNumberSelector.selectedID()
-						lineGroup.select("#line" + lineSelector.selectedID())
-							.attr("d", function(d) {
-								return path({
-									type: d.geometry.type,
-									coordinates: d.geometry.coordinates.filter(function(point) {
-										return filterPoints(point, numberOfPoints);
-									})
-								});
-							});
-					})
+				processSelectors(lineSelector.selectedID(), path);
 			});
+
+		processSelectors(1, path)
 
 	}
 	// Load lineData & pointData and do visualisations
@@ -164,6 +143,35 @@
 		});
 	});
 
+
+	function processSelectors(id, path) {
+		// 'un-highlight' all lines
+		lineGroup.selectAll(".line").classed("selected", false);
+		// highlight the selected line ... and a HACK: get the number of points from that line
+		var length = -1;
+		lineGroup.select("#line" + id)
+			.classed("selected", function(d) {length = d.geometry.coordinates.length; return true;});
+		// show the 'selector' of the point number to remove ... only if line has more than 2 points
+		if (length > 2) {
+			pointNumberSelector.addElements(d3.range(length-1).map(function(d) {return {properties: {id: d}}}), "");
+		} else {
+			// throw error otherwise
+			pointNumberSelector.throwException("Nop...number of points is <= 2!");
+		}
+		pointNumberSelector.select
+			.on("change", function() {
+				var numberOfPoints = pointNumberSelector.selectedID()
+				lineGroup.select("#line" + id)
+					.attr("d", function(d) {
+						return path({
+							type: d.geometry.type,
+							coordinates: d.geometry.coordinates.filter(function(point) {
+								return filterPoints(point, numberOfPoints);
+							})
+						});
+					});
+			})
+	}
 </script>
 </body>
 </html>
