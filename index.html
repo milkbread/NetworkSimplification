@@ -4,8 +4,8 @@
 	<script src="d3.v3.min.js"></script>
 	<script src="functions.js"></script>
 	<link rel="stylesheet" href="styles.css" />
-	<script src="sidebar.js"></script>
-	<link rel="stylesheet" href="sidebar.css" />
+	<script src="http://rawgithub.com/milkbread/JSLibs/master/sidebar.js"></script>
+	<link rel="stylesheet" href="http://rawgithub.com/milkbread/JSLibs/master/sidebar.css" />
 	<script src="simplify.js"></script>
 </head>
 <body>
@@ -93,6 +93,8 @@
 	var lineSelector = new Selector(sidebarContainer, "Select a line");
 	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove");
 
+	var quadtreePoints, quadtreeLines;
+
 	// Render all geometries in the corresponding groups
 	function renderData(lineData, pointData) {
 
@@ -115,8 +117,8 @@
 		// Inititialise the quadtree
 		var rawQuadtree = d3.geom.quadtree();
 		// rawQuadtree.extent(extent)			//can generate: 'Maximum call stack size exceeded'
-		var quadtreeLines = rawQuadtree(linesDataPoints);
-		var quadtreePoints = rawQuadtree(consDataPoints);
+		quadtreeLines = rawQuadtree(linesDataPoints);
+		quadtreePoints = rawQuadtree(consDataPoints);
 
 		// Draw the rectangles of the quadtree of all points of all lines
 		qRectLines = qGroupLines.selectAll(".node")
@@ -175,7 +177,7 @@
 					.on("click", function() {
 						var selID = parseInt(d3.select(this).attr("value"));
 						addSimplificationSelector(selID, path, projection);
-						lineSelector.setSelectedID(selID)
+						lineSelector.setSelectedID(selID);
 					});
 
 		// Draw the constraining points

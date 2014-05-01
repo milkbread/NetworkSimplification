@@ -60,6 +60,7 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 					.attr("id", "triangle"+i);
 			}
 			// define the coordinates of the triangle visualisation and highlight it as 'current'
+			console.log(triangleCoords)
 			currentTriangle
 				.attr("d", path({
 					type: "Polygon",
@@ -67,9 +68,28 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 				}))
 				.classed("current", true);
 		}
+		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
+			search(quadtreePoints, point[0], point[1]);
+		}
+
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
+
+function search(quadtree, x0, y0) {
+	// console.log(quadtree)
+	quadtree.visit(function(node, x1, y1, x2, y2) {
+		var p = node.point;
+		if (p) {
+			console.log(p)
+			// p.scanned = true;
+			// p.selected = (p[0] >= x0) && (p[0] < x3) && (p[1] >= y0) && (p[1] < y3);
+		}
+		return x2 < x0 || y2 < y0;
+		// return false;
+	});
+}
+
 
 // Transform all groups in relation to new values:
 // 		- 'groupScale'
