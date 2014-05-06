@@ -111,21 +111,27 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 	try:
-		transform_ = argv[1]
+		source_ = argv[1]
+	except:
+		raise ValueError("No data input given!")
+	try:
+		output_name_ = argv[2]
+	except:
+		output_name_ = "output"
+	try:
+		transform_ = argv[3]
 	except:
 		transform_ = None
 
-	lines_input = open('training_data/lines_out.txt', 'r')
-	points_input = open('training_data/points_out.txt', 'r')
+	try:
+		data_input = open(source_, 'r')
+	except:
+		raise ValueError("'%s' does not exist!" % source_)
 
-	lines = getOGRGeometries(lines_input, transform_)
-	points = getOGRGeometries(points_input, transform_)
-	# print lines
-	# print points
+	data = getOGRGeometries(data_input, transform_)
+	# print data
 
-	saveToGeoJSON('results/points.json',points)
-	saveToGeoJSON('results/lines.json',lines)
-
+	saveToGeoJSON('results/%s.json' % output_name_, data)
 
 if __name__ == "__main__":
     sys.exit(main())

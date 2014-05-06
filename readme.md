@@ -1,5 +1,22 @@
 This is just a simple framework to visualise and test D3-quadtrees
 
+### Get GeoJSON from original data
+
+#### Basically
+```shell
+python getGeoJSON.py training_data/lines_out.txt
+```
+
+#### Additionally: define the name of the output
+```shell
+python getGeoJSON.py training_data/lines_out.txt lines
+```
+
+#### Additionally: define the transformation of the output
+```shell
+python getGeoJSON.py training_data/lines_out.txt lines 54004
+```
+
 Thanks for helping me:
 
 * [Template](http://bl.ocks.org/mbostock/4343214)
