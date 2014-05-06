@@ -204,8 +204,8 @@
 
 	}
 	// Load lineData & pointData and do visualisations
-	d3.json("lines.json", function(error, lineData) {
-		d3.json("points.json", function(error, pointData) {
+	d3.json("results/lines.json", function(error, lineData) {
+		d3.json("results/points.json", function(error, pointData) {
 			renderData(lineData, pointData);
 		});
 	});
