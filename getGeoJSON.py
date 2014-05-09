@@ -25,6 +25,9 @@ FEATURE_DUMMY = {
 def saveLinesToGeoJSONMultilineString(filename, geometries, indizes=None):
 	multiline = copy.deepcopy(FEATURE_DUMMY)
 	multiline["geometry"]["type"] = "MultiLineString"
+	multiline["properties"]["id"] = 0
+	if indizes:
+		multiline["properties"]["indizes"] = indizes
 	for i in range(len(geometries)):
 		geom = geometries[i]
 		if geom.GetGeometryType() == 2:
@@ -37,8 +40,6 @@ def saveLinesToGeoJSONMultilineString(filename, geometries, indizes=None):
 			raise TypeError("Geometry type ('%s') is not a linestring" % geom.GetGeometryType())
 	feat_coll = copy.deepcopy(FEATCOLL_DUMMY)
 	feat_coll["features"].append(multiline)
-	if indizes:
-		feat_coll["properties"]["indizes"] = indizes
 
 	# save geoJSON to file
 	with open(filename, "w") as file:
@@ -91,7 +92,7 @@ def saveToGeoJSON(filename, geometries, indizes=None):
 		features.append(geojson)
 
 	# add features to feature-collection-dummy
-	featurecoll_geojson = FEATCOLL_DUMMY.copy()
+	featurecoll_geojson = copy.deepcopy(FEATCOLL_DUMMY)
 	featurecoll_geojson['features'] = features
 
 	# make a 'crs' and add it to the featureCollection ... currently only for 4326
@@ -156,10 +157,9 @@ def main(argv=None):
 		raise ValueError("'%s' does not exist!" % source_)
 
 	data, indizes = getOGRGeometries(data_input, transform_)
-	print indizes
 
 	saveToGeoJSON('results/%s.json' % output_name_, data, indizes)
-	saveLinesToGeoJSONMultilineString('results/multiline.json', data)
+	saveLinesToGeoJSONMultilineString('results/multiline.json', data, indizes)
 
 if __name__ == "__main__":
     sys.exit(main())

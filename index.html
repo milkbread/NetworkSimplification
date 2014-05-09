@@ -96,7 +96,9 @@
 	var quadtreePoints, quadtreeLines;
 
 	// Render all geometries in the corresponding groups
-	function renderData(lineData, pointData) {
+	function renderData(lineData, pointData, multilineData) {
+
+		console.log(multilineData)
 
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, -1 * ((d[1]-extent[0][1]) * scale)]; }
@@ -206,7 +208,9 @@
 	// Load lineData & pointData and do visualisations
 	d3.json("results/lines.json", function(error, lineData) {
 		d3.json("results/points.json", function(error, pointData) {
-			renderData(lineData, pointData);
+			d3.json("results/multiline.json", function(error, multilineData) {
+				renderData(lineData, pointData, multilineData);
+			});
 		});
 	});
 

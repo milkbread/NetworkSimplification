@@ -4031,17 +4031,38 @@
             }, 
             "type": "Feature", 
             "properties": {
-                "id": null
+                "id": 0, 
+                "indizes": [
+                    "1", 
+                    "2", 
+                    "3", 
+                    "4", 
+                    "6", 
+                    "7", 
+                    "8", 
+                    "10", 
+                    "11", 
+                    "13", 
+                    "14", 
+                    "15", 
+                    "16", 
+                    "17", 
+                    "18", 
+                    "19", 
+                    "20", 
+                    "21", 
+                    "22", 
+                    "23", 
+                    "24", 
+                    "26", 
+                    "27", 
+                    "28", 
+                    "29", 
+                    "30", 
+                    "31"
+                ]
             }
         }
     ], 
-    "properties": {
-        "crs": {
-            "type": "link", 
-            "properties": {
-                "href": "http://spatialreference.org/ref/epsg/4326/", 
-                "type": "epsg"
-            }
-        }
-    }
+    "properties": {}
 }
