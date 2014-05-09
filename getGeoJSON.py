@@ -105,16 +105,17 @@ def getOGRGeometries(data, transform_ = None):
 	for line in data.readlines():
 		# check if we have to remove two or three chars from line
 		index_ = 2 if line[1:2]==':' else 3
+		real_index_list.append(line[:index_].replace(':',''))
+
 		# remove first 'index'-chars
 		gml_ = line[index_:]
-		real_index_list.append(line[:index_].replace(':',''))
 		# convert to ogr-geometry
 		if transform_:
 			ogr_geometry = transform(ogr.CreateGeometryFromGML(gml_), transform_)
 		else:
 			ogr_geometry = ogr.CreateGeometryFromGML(gml_)
 		geometries.append(ogr_geometry)
-	return geometries
+	return geometries, real_index_list
 
 def main(argv=None):
 	if argv is None:
@@ -137,10 +138,11 @@ def main(argv=None):
 	except:
 		raise ValueError("'%s' does not exist!" % source_)
 
-	data = getOGRGeometries(data_input, transform_)
-	# print data
+	data, indizes = getOGRGeometries(data_input, transform_)
+	print indizes
 
-	saveToGeoJSON('results/%s.json' % output_name_, data)
+	saveToGeoJSON('results/%s.json' % output_name_, data, indizes)
+	saveLinesToGeoJSONMultilineString('results/%s.json' % output_name_, data)
 
 if __name__ == "__main__":
     sys.exit(main())
