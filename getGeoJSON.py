@@ -3,30 +3,39 @@
 import sys
 from osgeo import ogr, osr
 import json
+import copy
+
+FEATCOLL_DUMMY = {
+    "type": "FeatureCollection",
+    "features": []
+}
+
+FEATURE_DUMMY = {
+  "type": "Feature",
+  "geometry": {
+    "type": "",
+    "coordinates": []
+  },
+  "properties": {
+  	'id':None
+  }
+}
+
+def saveLinesToGeoJSONMultilineString(filename, geometries):
+	multiline = copy.deepcopy(FEATURE_DUMMY)
+	multiline["geometry"]["type"] = "MultiLineString"
+	print multiline
+	# for i in range(len(geometries)):
+
 
 def saveToGeoJSON(filename, geometries, indizes=None):
-	featcoll_dummy = {
-	    "type": "FeatureCollection",
-	    "features": []
-	}
-
 	features = []
 	for i in range(len(geometries)):
 		id = indizes[i] if indizes else i
 		geom = geometries[i]
 
-		feauture_dummy = {
-		  "type": "Feature",
-		  "geometry": {
-		    "type": "",
-		    "coordinates": []
-		  },
-		  "properties": {
-		  	'id':None
-		  }
-		}
 		# add geometry to geoJSON-geometry-dummy
-		geojson = feauture_dummy.copy()
+		geojson = copy.deepcopy(FEATURE_DUMMY)
 		geojson['properties']['id'] = id
 
 		if geom.GetGeometryType() == 1:
@@ -65,7 +74,7 @@ def saveToGeoJSON(filename, geometries, indizes=None):
 		features.append(geojson)
 
 	# add features to feature-collection-dummy
-	featurecoll_geojson = featcoll_dummy.copy()
+	featurecoll_geojson = FEATCOLL_DUMMY.copy()
 	featurecoll_geojson['features'] = features
 
 	# make a 'crs' and add it to the featureCollection ... currently only for 4326
