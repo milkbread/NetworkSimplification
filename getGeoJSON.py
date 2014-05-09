@@ -7,7 +7,8 @@ import copy
 
 FEATCOLL_DUMMY = {
     "type": "FeatureCollection",
-    "features": []
+    "features": [],
+    "properties": {}
 }
 
 FEATURE_DUMMY = {
@@ -21,12 +22,28 @@ FEATURE_DUMMY = {
   }
 }
 
-def saveLinesToGeoJSONMultilineString(filename, geometries):
+def saveLinesToGeoJSONMultilineString(filename, geometries, indizes=None):
 	multiline = copy.deepcopy(FEATURE_DUMMY)
 	multiline["geometry"]["type"] = "MultiLineString"
-	print multiline
-	# for i in range(len(geometries)):
+	for i in range(len(geometries)):
+		geom = geometries[i]
+		if geom.GetGeometryType() == 2:
+			multiline_points = []
+			coords = list(geom.GetPoints())
+			for coord in coords:
+				multiline_points.append([coord[0],coord[1]])
+			multiline['geometry']['coordinates'].append(multiline_points)
+		else:
+			raise TypeError("Geometry type ('%s') is not a linestring" % geom.GetGeometryType())
+	feat_coll = copy.deepcopy(FEATCOLL_DUMMY)
+	feat_coll["features"].append(multiline)
+	if indizes:
+		feat_coll["properties"]["indizes"] = indizes
 
+	# save geoJSON to file
+	with open(filename, "w") as file:
+		file.write(json.dumps(feat_coll, indent=4))
+	file.close()
 
 def saveToGeoJSON(filename, geometries, indizes=None):
 	features = []
@@ -79,7 +96,7 @@ def saveToGeoJSON(filename, geometries, indizes=None):
 
 	# make a 'crs' and add it to the featureCollection ... currently only for 4326
 	crs = {"type": "link", "properties": {"href": "http://spatialreference.org/ref/epsg/4326/", "type": "epsg"}}
-	featurecoll_geojson["properties"] = crs
+	featurecoll_geojson["properties"]["crs"] = crs
 
 	# save geoJSON to file
 	with open(filename, "w") as file:
@@ -142,7 +159,7 @@ def main(argv=None):
 	print indizes
 
 	saveToGeoJSON('results/%s.json' % output_name_, data, indizes)
-	saveLinesToGeoJSONMultilineString('results/%s.json' % output_name_, data)
+	saveLinesToGeoJSONMultilineString('results/multiline.json', data)
 
 if __name__ == "__main__":
     sys.exit(main())
