@@ -10,25 +10,25 @@ d3.simplify = function() {
         maxArea = 0,
         triangle;
 
-        var points = feature.coordinates,
-            triangles = [];
+    var points = feature.coordinates,
+        triangles = [];
 
-        for (var i = 1, n = feature.coordinates.length - 1; i < n; ++i) {
-          triangle = points.slice(i - 1, i + 2);
-          if (triangle[1][2] = area(triangle)) {
-            triangle[1][3] = triangle;
-            triangles.push(triangle);
-            heap.push(triangle);
-          }
-        }
+    for (var i = 1, n = feature.coordinates.length - 1; i < n; ++i) {
+      triangle = points.slice(i - 1, i + 2);
+      if (triangle[1][2] = area(triangle)) {
+        triangle[1][3] = triangle;
+        triangles.push(triangle);
+        heap.push(triangle);
+      }
+    }
 
-        for (var i = 0, n = triangles.length; i < n; ++i) {
-          triangle = triangles[i];
-          triangle.previous = triangles[i - 1];
-          triangle.next = triangles[i + 1];
-        }
+    for (var i = 0, n = triangles.length; i < n; ++i) {
+      triangle = triangles[i];
+      triangle.previous = triangles[i - 1];
+      triangle.next = triangles[i + 1];
+    }
 
-        feature.coordinates = points;
+    feature.coordinates = points;
 
     while (triangle = heap.pop()) {
 
