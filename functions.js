@@ -223,8 +223,6 @@ function area(t) {
 // 			3. - make an indexed object from the sorted array {id0: rank, id1: rank, ..., idN: rank}
 // 			4. - add the rank to each point (point[3]), by using the indexed object
 function rankAfterTriangles(feature) {
-	// !!!ToDO: There is a failure in the ranking --> as we include the 'undefined' points...
-	// the ranking does not start right for later filtering!!!
 	// 0:
 	var length = feature.geometry.coordinates.length;
 	feature.geometry.coordinates = feature.geometry.coordinates.map(function(point, i) {
@@ -236,8 +234,11 @@ function rankAfterTriangles(feature) {
 	})
 	// console.log(feature.geometry.coordinates)
 	// 1:
-	var triangles = feature.geometry.coordinates.map(function(d, i) {
-		return {area: typeof d[2] !== "undefined" ? d[2].area : -1, index: i};
+	var triangles = [];
+	feature.geometry.coordinates.forEach(function(d, i) {
+		if(typeof d[2] !== "undefined") {
+			triangles.push({area: d[2].area, index: i});
+		}
 	})
 	// 2:
 	triangles.sort(function(a, b) {
