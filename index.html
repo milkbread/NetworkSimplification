@@ -225,17 +225,14 @@
 		console.log(numAllPoints, numDeletablePoints)
 		pointNumberSelectorNetwork.addElements(d3.range(numDeletablePoints).map(function(d) {return {properties: {id: d}}}), "");
 
-		simplifyNetwork(multilineData.features[0].geometry);
-		d3.rank(multilineData.features[0].geometry);
-		d3.clean(multilineData.features[0].geometry);
-		console.log(multilineData.features[0].geometry.coordinates)
-
 		pointNumberSelectorNetwork.select
 			.on("change", function() {
 				var numberOfPoints = pointNumberSelectorNetwork.selectedID();
+
 				if (numberOfPoints > 0) {
 					simplifyNetwork(multilineData.features[0].geometry, numberOfPoints);
 					d3.rank(multilineData.features[0].geometry);
+					d3.clean(multilineData.features[0].geometry);
 				}
 
 				lineNetworkGroup.select(".lineNetwork")
@@ -248,7 +245,6 @@
 								})
 							})
 						}
-						console.log(geom)
 						return path(geom);
 					});
 			})
