@@ -109,11 +109,13 @@
 		var simplify = d3.simplify().projection(projection);
 		var simplifyNetwork = d3.simplifyNetwork().projection(projection);
 
-		simplifyNetwork(multilineData.features[0].geometry)
+		simplifyNetwork(multilineData.features[0].geometry, 100);
+
+		d3.rank(multilineData.features[0].geometry);
 
 		// Add area of triangle to each feature
 		lineData.features.forEach(function(feature) {
-			simplify(feature.geometry)
+			simplify(feature.geometry);
 			// addTriangleSize(feature.geometry, projection);
 			feature = rankAfterTriangles(feature);
 		});

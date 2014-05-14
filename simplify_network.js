@@ -1,10 +1,45 @@
 (function() {
 
+d3.rank = function(multiline) {
+  // Get all triangles
+  var triangles = [], i = 0;
+  multiline.coordinates.forEach(function(line, i) {
+    line.forEach(function(point, j) {
+      if(typeof point[2] !== "undefined") {
+        triangles.push({area: point[2], lineIndex: i, pointIndex: j});
+      }
+    });
+  });
+  // Sort the triangles
+  triangles.sort(function(a, b) {
+    return a.area - b.area;
+  });
+  // Build a dict with all ranking values
+  var trianglesObject = [];
+  triangles.forEach(function(d, rank) {
+    // if inner dict does not exist, build one
+    if (typeof trianglesObject[d.lineIndex] === "undefined") {
+      var dummyDict = {};
+      dummyDict[d.pointIndex] = rank
+      trianglesObject[d.lineIndex] = dummyDict;
+    }
+    trianglesObject[d.lineIndex][d.pointIndex] = rank;
+  });
+  // Set rank to each point
+  multiline.coordinates.forEach(function(line, i) {
+    line.forEach(function(point, j) {
+      if (typeof point[2] !== "undefined") {
+        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3]}
+        point.pop();
+      }
+    });
+  });
+};
+
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
   function simplify(feature, clearPoints) {
-    console.log(feature)
     if (feature.type !== "MultiLineString") throw new Error("not yet supported");
 
     var heap = minHeap(),
@@ -26,7 +61,6 @@ d3.simplifyNetwork = function() {
     });
     console.log("Number of triangles: " + triangles.length)
 
-
     for (var i = 0, n = triangles.length; i < n; ++i) {
       triangle = triangles[i];
       triangle.previous = triangles[i - 1];
@@ -36,7 +70,6 @@ d3.simplifyNetwork = function() {
     var counter = 0;
 
     while (triangle = heap.pop()) {
-      counter ++;
 
       // If the area of the current point is less than that of the previous point
       // to be eliminated, use the latterâ€™s area instead. This ensures that the
@@ -61,6 +94,11 @@ d3.simplifyNetwork = function() {
       } else {
         triangle[2][2] = triangle[1][2];
         triangle[2][3] = triangle[1][3];
+      }
+
+      counter ++;
+      if (counter === clearPoints) {
+        break;
       }
     }
 
