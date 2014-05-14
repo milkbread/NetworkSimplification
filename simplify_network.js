@@ -1,26 +1,31 @@
 (function() {
 
-d3.simplify = function() {
+d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(feature) {
-    if (feature.type !== "LineString") throw new Error("not yet supported");
+  function simplify(feature, clearPoints) {
+    console.log(feature)
+    if (feature.type !== "MultiLineString") throw new Error("not yet supported");
 
     var heap = minHeap(),
-        maxArea = 0,
-        triangle;
+      maxArea = 0,
+      triangles = [],
+      triangle;
 
-    var points = feature.coordinates,
-        triangles = [];
-
-    for (var i = 1, n = feature.coordinates.length - 1; i < n; ++i) {
-      triangle = points.slice(i - 1, i + 2);
-      if (triangle[1][2] = area(triangle)) {
-        triangle[1][3] = triangle;
-        triangles.push(triangle);
-        heap.push(triangle);
+    var lines = feature.coordinates;
+    lines.forEach(function(line) {
+      var points = line;
+      for (var i = 1, n = line.length - 1; i < n; ++i) {
+        triangle = points.slice(i - 1, i + 2);
+        if (triangle[1][2] = area(triangle)) {
+          triangle[1][3] = triangle;
+          triangles.push(triangle);
+          heap.push(triangle);
+        }
       }
-    }
+    });
+    console.log("Number of triangles: " + triangles.length)
+
 
     for (var i = 0, n = triangles.length; i < n; ++i) {
       triangle = triangles[i];
@@ -28,7 +33,10 @@ d3.simplify = function() {
       triangle.next = triangles[i + 1];
     }
 
+    var counter = 0;
+
     while (triangle = heap.pop()) {
+      counter ++;
 
       // If the area of the current point is less than that of the previous point
       // to be eliminated, use the latterâ€™s area instead. This ensures that the
@@ -63,6 +71,7 @@ d3.simplify = function() {
       heap.push(triangle);
     }
 
+    console.log("Walkthroughs: " + counter)
     return feature;
   }
 

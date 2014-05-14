@@ -7,6 +7,7 @@
 	<script src="http://rawgithub.com/milkbread/JSLibs/master/sidebar.js"></script>
 	<link rel="stylesheet" href="http://rawgithub.com/milkbread/JSLibs/master/sidebar.css" />
 	<script src="simplify.js"></script>
+	<script src="simplify_network.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -47,6 +48,7 @@
 		boundariesGroup = svg.append("g").attr("id", "boundariesGroup"),
 		pointGroup = svg.append("g").attr("id", "pointGroup"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
+		lineNetworkGroup = svg.append("g").attr("id", "lineNetworkGroup"),
 		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
 		qRectLines, qRectPoints, points, lines, constrainingPoints, labels;
@@ -74,8 +76,12 @@
 			svgGroup: pointGroup,
 			visibility: "hidden"},
 		{	name: "lines",
-			description: "Lines",
+			description: "Lines (single)",
 			svgGroup: lineGroup,
+			visibility: "hidden"},
+		{	name: "linesnetwork",
+			description: "Lines (network)",
+			svgGroup: lineNetworkGroup,
 			visibility: "visible"},
 		{	name: "consPoints",
 			description: "Constraining points",
@@ -98,11 +104,12 @@
 	// Render all geometries in the corresponding groups
 	function renderData(lineData, pointData, multilineData) {
 
-		console.log(multilineData)
-
 		var extent = getExtent(lineData); //[[minX, minY], [maxX, maxY]]
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, -1 * ((d[1]-extent[0][1]) * scale)]; }
 		var simplify = d3.simplify().projection(projection);
+		var simplifyNetwork = d3.simplifyNetwork().projection(projection);
+
+		simplifyNetwork(multilineData.features[0].geometry)
 
 		// Add area of triangle to each feature
 		lineData.features.forEach(function(feature) {
@@ -158,9 +165,17 @@
 					.attr("cx", function(d) { return d[0]; })
 					.attr("cy", function(d) { return d[1]; });
 
-		// Draw all lines
+		// Draw all lines (single)
 		lines = lineGroup.selectAll(".line")
 			.data(lineData.features)
+				.enter().append("path")
+					.attr("d", function(d){ return path(d.geometry); })
+					.attr("class", "line")
+					.attr("id", function(d) { return "line" + d.properties.id });
+
+		// Draw all lines (network)
+		lines = lineNetworkGroup.selectAll(".line")
+			.data(multilineData.features)
 				.enter().append("path")
 					.attr("d", function(d){ return path(d.geometry); })
 					.attr("class", "line")
