@@ -217,32 +217,39 @@
 		// initially select the first line
 		addSSelectorSingleLine(1, path, projection);
 
-		var numAllPoints = 0;
+		var numAllPoints = 0, numDeletablePoints = 0;
 		multilineData.features[0].geometry.coordinates.forEach(function(line) {
-			numAllPoints += line.length-2; // minus the start-& end-point
+			numAllPoints += line.length;
+			numDeletablePoints += line.length-2; // minus the start-& end-point
 		});
-		console.log(numAllPoints)
-		pointNumberSelectorNetwork.addElements(d3.range(numAllPoints).map(function(d) {return {properties: {id: d}}}), "");
+		console.log(numAllPoints, numDeletablePoints)
+		pointNumberSelectorNetwork.addElements(d3.range(numDeletablePoints).map(function(d) {return {properties: {id: d}}}), "");
+
+		simplifyNetwork(multilineData.features[0].geometry);
+		d3.rank(multilineData.features[0].geometry);
+		d3.clean(multilineData.features[0].geometry);
+		console.log(multilineData.features[0].geometry.coordinates)
 
 		pointNumberSelectorNetwork.select
 			.on("change", function() {
 				var numberOfPoints = pointNumberSelectorNetwork.selectedID();
-				console.log(numberOfPoints)
-
-				simplifyNetwork(multilineData.features[0].geometry, numberOfPoints);
-				d3.rank(multilineData.features[0].geometry);
+				if (numberOfPoints > 0) {
+					simplifyNetwork(multilineData.features[0].geometry, numberOfPoints);
+					d3.rank(multilineData.features[0].geometry);
+				}
 
 				lineNetworkGroup.select(".lineNetwork")
 					.attr("d", function(d) {
-						return path({
+						var geom = {
 							type: d.type,
 							coordinates: d.coordinates.map(function(line) {
 								return line.filter(function(point) {
 									return filterPointsSimple(point, numberOfPoints);
 								})
 							})
-						});
-						return path(d);
+						}
+						console.log(geom)
+						return path(geom);
 					});
 			})
 	}

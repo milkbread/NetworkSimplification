@@ -1,4 +1,18 @@
 (function() {
+d3.clean = function(multiline) {
+  // Test if the first or last point of each line has a 'third' value - it shouldn't have it!!!
+  multiline.coordinates.forEach(function(line) {
+    var length = line.length;
+    // Check the first point
+    if (typeof line[0][2] !== "undefined") {
+      line[0].pop();
+    }
+    // Check the last point
+    if (typeof line[length-1][2] !== "undefined") {
+      line[length-1].pop();
+    }
+  });
+};
 
 d3.rank = function(multiline) {
   // Get all triangles
@@ -97,7 +111,7 @@ d3.simplifyNetwork = function() {
       }
 
       counter ++;
-      if (counter === clearPoints) {
+      if (typeof clearPoints !== "undefined" && counter === clearPoints) {
         break;
       }
     }
