@@ -223,7 +223,7 @@
 			numDeletablePoints += line.length-2; // minus the start-& end-point
 		});
 		console.log(numAllPoints, numDeletablePoints)
-		pointNumberSelectorNetwork.addElements(d3.range(numDeletablePoints).map(function(d) {return {properties: {id: d}}}), "");
+		pointNumberSelectorNetwork.addElements(d3.range(numDeletablePoints+1).map(function(d) {return {properties: {id: d}}}), "");
 
 		pointNumberSelectorNetwork.select
 			.on("change", function() {

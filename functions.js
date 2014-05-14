@@ -78,7 +78,7 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 
 function filterPointsSimple(point, numberOfPoints) {
 	if (typeof point[2] !== "undefined") {
-		return point[2].rank > parseInt(numberOfPoints) + 1;
+		return point[2].rank > numberOfPoints;
 	} else return point;
 }
 
