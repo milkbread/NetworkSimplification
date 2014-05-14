@@ -8,7 +8,7 @@ function nodes(quadtree) {
 }
 
 // Add the selector for the number of points to remove (when a line was selected) and implement filtering
-function addSimplificationSelector(id, path, projection) {
+function addSSelectorSingleLine(id, path, projection) {
 	// 'un-highlight' all lines
 	lineGroup.selectAll(".line").classed("selected", false);
 	labelGroup.selectAll(".label").classed("selected", false);
@@ -60,7 +60,7 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 					.attr("id", "triangle"+i);
 			}
 			// define the coordinates of the triangle visualisation and highlight it as 'current'
-			console.log(triangleCoords)
+			// console.log(triangleCoords)
 			currentTriangle
 				.attr("d", path({
 					type: "Polygon",
@@ -68,10 +68,16 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 				}))
 				.classed("current", true);
 		}
-		if (point[2].rank <= parseInt(numberOfPoints) + 1) {
-			search(quadtreePoints, point[0], point[1]);
-		}
+		// if (point[2].rank <= parseInt(numberOfPoints) + 1) {
+		// 	search(quadtreePoints, point[0], point[1]);
+		// }
 
+		return point[2].rank > parseInt(numberOfPoints) + 1;
+	} else return point;
+}
+
+function filterPointsSimple(point, numberOfPoints) {
+	if (typeof point[2] !== "undefined") {
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
@@ -217,6 +223,8 @@ function area(t) {
 // 			3. - make an indexed object from the sorted array {id0: rank, id1: rank, ..., idN: rank}
 // 			4. - add the rank to each point (point[3]), by using the indexed object
 function rankAfterTriangles(feature) {
+	// !!!ToDO: There is a failure in the ranking --> as we include the 'undefined' points...
+	// the ranking does not start right for later filtering!!!
 	// 0:
 	var length = feature.geometry.coordinates.length;
 	feature.geometry.coordinates = feature.geometry.coordinates.map(function(point, i) {

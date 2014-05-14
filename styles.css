@@ -8,7 +8,8 @@ rect {
 	stroke: none;
 }
 
-.line {
+.line,
+.lineNetwork {
 	fill: none;
 	stroke: rgba(0%, 0%, 0%, .3);
 }

@@ -4,7 +4,7 @@
 	<script src="d3.v3.min.js"></script>
 	<script src="functions.js"></script>
 	<link rel="stylesheet" href="styles.css" />
-	<script src="http://rawgithub.com/milkbread/JSLibs/master/sidebar.js"></script>
+	<script src="../JSLibs/sidebar.js"></script>
 	<link rel="stylesheet" href="http://rawgithub.com/milkbread/JSLibs/master/sidebar.css" />
 	<script src="simplify.js"></script>
 	<script src="simplify_network.js"></script>
@@ -18,7 +18,7 @@
 	// }
 
 	// Basic variables
-	var width = 730,
+	var width = 680,
 	    height = 600,
 	    scale = 280,
 		groupScale = 1,
@@ -51,7 +51,7 @@
 		lineNetworkGroup = svg.append("g").attr("id", "lineNetworkGroup"),
 		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		qRectLines, qRectPoints, points, lines, constrainingPoints, labels;
+		qRectLines, qRectPoints, points, lines, linesNetwork, constrainingPoints, labels;
 
 	// Build an array of group-objects
 	var groups = [
@@ -97,7 +97,8 @@
 	var sidebarContainer = container.append("div").attr("id", "sidebarContainer");
 	var toolbar = new Toolbar(sidebarContainer, groups, "Select Elements");
 	var lineSelector = new Selector(sidebarContainer, "Select a line");
-	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove");
+	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove (s)");
+	var pointNumberSelectorNetwork = new Selector(sidebarContainer, "Number to remove (n)");
 
 	var quadtreePoints, quadtreeLines;
 
@@ -108,10 +109,6 @@
 		function projection(d) { return [(d[0]-extent[0][0]) * scale, -1 * ((d[1]-extent[0][1]) * scale)]; }
 		var simplify = d3.simplify().projection(projection);
 		var simplifyNetwork = d3.simplifyNetwork().projection(projection);
-
-		simplifyNetwork(multilineData.features[0].geometry, 100);
-
-		d3.rank(multilineData.features[0].geometry);
 
 		// Add area of triangle to each feature
 		lineData.features.forEach(function(feature) {
@@ -176,12 +173,11 @@
 					.attr("id", function(d) { return "line" + d.properties.id });
 
 		// Draw all lines (network)
-		lines = lineNetworkGroup.selectAll(".line")
-			.data(multilineData.features)
-				.enter().append("path")
-					.attr("d", function(d){ return path(d.geometry); })
-					.attr("class", "line")
-					.attr("id", function(d) { return "line" + d.properties.id });
+		linesNetwork = lineNetworkGroup
+			.append("path")
+				.datum(multilineData.features[0].geometry)
+					.attr("d", function(d){ return path(d); })
+					.attr("class", "lineNetwork");
 
 		// Draw the labels of the lines
 		labels = labelGroup.selectAll(".label")
@@ -195,7 +191,7 @@
 					.attr("value", function(d) { return d.properties.id })
 					.on("click", function() {
 						var selID = parseInt(d3.select(this).attr("value"));
-						addSimplificationSelector(selID, path, projection);
+						addSSelectorSingleLine(selID, path, projection);
 						lineSelector.setSelectedID(selID);
 					});
 
@@ -214,13 +210,41 @@
 		lineSelector.select
 			// Add an action for the change of the 'lineSelector'
 			.on("change", function() {
-				addSimplificationSelector(lineSelector.selectedID(), path, projection);
+				addSSelectorSingleLine(lineSelector.selectedID(), path, projection);
 			});
 
 
 		// initially select the first line
-		addSimplificationSelector(1, path, projection);
+		addSSelectorSingleLine(1, path, projection);
 
+		var numAllPoints = 0;
+		multilineData.features[0].geometry.coordinates.forEach(function(line) {
+			numAllPoints += line.length-2; // minus the start-& end-point
+		});
+		console.log(numAllPoints)
+		pointNumberSelectorNetwork.addElements(d3.range(numAllPoints).map(function(d) {return {properties: {id: d}}}), "");
+
+		pointNumberSelectorNetwork.select
+			.on("change", function() {
+				var numberOfPoints = pointNumberSelectorNetwork.selectedID();
+				console.log(numberOfPoints)
+
+				simplifyNetwork(multilineData.features[0].geometry, numberOfPoints);
+				d3.rank(multilineData.features[0].geometry);
+
+				lineNetworkGroup.select(".lineNetwork")
+					.attr("d", function(d) {
+						return path({
+							type: d.type,
+							coordinates: d.coordinates.map(function(line) {
+								return line.filter(function(point) {
+									return filterPointsSimple(point, numberOfPoints);
+								})
+							})
+						});
+						return path(d);
+					});
+			})
 	}
 	// Load lineData & pointData and do visualisations
 	d3.json("results/lines.json", function(error, lineData) {
