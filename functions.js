@@ -13,23 +13,19 @@ function search(quadtree, triangle, projection) {
 	quadtree.visit(function(node, x1, y1, x2, y2) {
 		// Project triangle points to have comparable values
 		var triangle_ = triangle.map(function(p){return projection(p);})
-		var extent = getExtentOfTriangle(triangle_);
+		// Check if there is a point in the node
 		var p = node.point;
 		if (p) {
-			// p[2] = 'visited';//pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2]);
+			// p[2] = 'visited';
 			if (pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2])) {
 				p[2] = 'affected';
 				foundConstPoint = true;
-			} else {
 			}
-
-			// console.log(p)
 		}
-		// return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
-		// console.log(extent, x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1])
-		// console.log(x1, y1, x2, y2)
+		// get the extent of the triangle
+		var extent = getExtentOfTriangle(triangle_);
+		// return true if extent lies not in the extent of the node (does not search on in this node)
 		return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
-		// return false;
 	});
 	return foundConstPoint;
 }
@@ -151,21 +147,6 @@ function filterPointsSimple(point, quadtree, path, numberOfPoints, projection) {
 		return point[2].rank >= numberOfPoints;
 	} else return point;
 }
-
-/*function search(quadtree, x0, y0) {
-	// console.log(quadtree)
-	quadtree.visit(function(node, x1, y1, x2, y2) {
-		var p = node.point;
-		if (p) {
-			console.log(p)
-			// p.scanned = true;
-			// p.selected = (p[0] >= x0) && (p[0] < x3) && (p[1] >= y0) && (p[1] < y3);
-		}
-		return x2 < x0 || y2 < y0;
-		// return false;
-	});
-}
-*/
 
 // Transform all groups in relation to new values:
 // 		- 'groupScale'
