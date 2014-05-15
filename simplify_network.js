@@ -43,7 +43,7 @@ d3.rank = function(multiline) {
   multiline.coordinates.forEach(function(line, i) {
     line.forEach(function(point, j) {
       if (typeof point[2] !== "undefined") {
-        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3]}
+        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: false}
         point.pop();
       }
     });

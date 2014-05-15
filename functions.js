@@ -9,6 +9,7 @@ function nodes(quadtree) {
 
 // Find the nodes within the specified rectangle.
 function search(quadtree, triangle, projection) {
+	var foundConstPoint = false;
 	quadtree.visit(function(node, x1, y1, x2, y2) {
 		// Project triangle points to have comparable values
 		var triangle_ = triangle.map(function(p){return projection(p);})
@@ -17,8 +18,8 @@ function search(quadtree, triangle, projection) {
 		if (p) {
 			// p[2] = 'visited';//pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2]);
 			if (pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2])) {
-				console.log('it inside')
 				p[2] = 'affected';
+				foundConstPoint = true;
 			} else {
 			}
 
@@ -30,6 +31,7 @@ function search(quadtree, triangle, projection) {
 		return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
 		// return false;
 	});
+	return foundConstPoint;
 }
 
 // Add the selector for the number of points to remove (when a line was selected) and implement filtering
@@ -104,6 +106,10 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 
 function filterPoints(point, numberOfPoints, projection, path, i) {
 	if (typeof point[2] !== "undefined") {
+		// Stop directly when the point got the 'fixed'-value
+		if(point[2].fixed === true) {
+			// return point;
+		}
 		// Draw the triangle of the point that was removed last (as its rank is identic with the 'numberOfPoints' to remove)
 		if (point[2].rank === parseInt(numberOfPoints) + 1) {
 			var triangleCoords = point[2].triangle;
@@ -125,11 +131,13 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 				}))
 				.classed("current", true);
 		}
-		if (point[2].rank === numberOfPoints + 1 ){
+		if (point[2].rank <= numberOfPoints + 1 ){
 			// console.log("will now search")
-			search(quadtreePoints, point[2].triangle, projection);
+			point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
+			if(point[2].fixed === true) {
+				return point;
+			}
 		}
-
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
