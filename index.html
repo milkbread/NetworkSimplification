@@ -18,7 +18,7 @@
 	// }
 
 	// Basic variables
-	var width = 680,
+	var width = 660,
 	    height = 600,
 	    scale = 280,
 		groupScale = 1,
@@ -96,9 +96,9 @@
 	// Create some sidebar elements
 	var sidebarContainer = container.append("div").attr("id", "sidebarContainer");
 	var toolbar = new Toolbar(sidebarContainer, groups, "Select Elements");
-	var lineSelector = new Selector(sidebarContainer, "Select a line");
-	var pointNumberSelector = new Selector(sidebarContainer, "Number to remove (s)");
-	var pointNumberSelectorNetwork = new Selector(sidebarContainer, "Number to remove (n)");
+	var lineSelector = new Selector(sidebarContainer, "Select a (single) line");
+	var pointNumberSelector = new Selector(sidebarContainer, "Remove points (single line)");
+	var pointNumberSelectorNetwork = new Selector(sidebarContainer, "Remove points (network)");
 
 	var quadtreePoints, quadtreeLines;
 
@@ -121,6 +121,14 @@
 				.projection(projection),
 			linesDataPoints = getAllPoints(lineData, projection),
 			consDataPoints = getAllPoints(pointData, projection);
+			multiLineGeom = multilineData.features[0].geometry;
+
+		// Add some basic information to the sidebar
+		var infos = sidebarContainer.append("div");
+		infos.append('h2').text("Basic infos");
+		infos.append('p').text("Total number of Points: " + linesDataPoints.length);
+		var numDeletablePoints = linesDataPoints.length - (lineData.features.length * 2);
+		infos.append('p').text("Inner number of Points: " + numDeletablePoints);
 
 		// Inititialise the quadtree
 		var rawQuadtree = d3.geom.quadtree();
