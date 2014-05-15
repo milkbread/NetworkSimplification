@@ -7,8 +7,33 @@ function nodes(quadtree) {
 	return nodes;
 }
 
+// Find the nodes within the specified rectangle.
+function search(quadtree, triangle, projection) {
+	quadtree.visit(function(node, x1, y1, x2, y2) {
+		// Project triangle points to have comparable values
+		var triangle_ = triangle.map(function(p){return projection(p);})
+		var extent = getExtentOfTriangle(triangle_);
+		var p = node.point;
+		if (p) {
+			// p[2] = 'visited';//pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2]);
+			if (pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2])) {
+				console.log('it inside')
+				p[2] = 'affected';
+			} else {
+			}
+
+			// console.log(p)
+		}
+		// return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
+		// console.log(extent, x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1])
+		// console.log(x1, y1, x2, y2)
+		return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
+		// return false;
+	});
+}
+
 // Add the selector for the number of points to remove (when a line was selected) and implement filtering
-function addSSelectorSingleLine(id, path, projection) {
+function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 	// 'un-highlight' all lines
 	lineGroup.selectAll(".line").classed("selected", false);
 	labelGroup.selectAll(".label").classed("selected", false);
@@ -42,10 +67,14 @@ function addSSelectorSingleLine(id, path, projection) {
 							})
 					});
 				});
+			constrainingPointsVis
+				.classed("affected", function(d) {
+					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
+				});
 		})
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork) {
+function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection) {
 	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
 
 	pointNumberSelectorNetwork.select
@@ -64,7 +93,7 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork) {
 						type: d.type,
 						coordinates: d.coordinates.map(function(line) {
 							return line.filter(function(point) {
-								return filterPointsSimple(point, numberOfPoints);
+								return filterPointsSimple(point, quadTree, path, numberOfPoints, projection);
 							})
 						})
 					}
@@ -96,21 +125,26 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 				}))
 				.classed("current", true);
 		}
-		// if (point[2].rank <= parseInt(numberOfPoints) + 1) {
-		// 	search(quadtreePoints, point[0], point[1]);
-		// }
+		if (point[2].rank === numberOfPoints + 1 ){
+			// console.log("will now search")
+			search(quadtreePoints, point[2].triangle, projection);
+		}
 
 		return point[2].rank > parseInt(numberOfPoints) + 1;
 	} else return point;
 }
 
-function filterPointsSimple(point, numberOfPoints) {
+function filterPointsSimple(point, quadtree, path, numberOfPoints, projection) {
 	if (typeof point[2] !== "undefined") {
-		return point[2].rank > numberOfPoints;
+		// Check if there is a point in the current triangle
+		if(point[2].rank === numberOfPoints) {
+			search(quadtree, point[2].triangle);
+		}
+		return point[2].rank >= numberOfPoints;
 	} else return point;
 }
 
-function search(quadtree, x0, y0) {
+/*function search(quadtree, x0, y0) {
 	// console.log(quadtree)
 	quadtree.visit(function(node, x1, y1, x2, y2) {
 		var p = node.point;
@@ -123,7 +157,7 @@ function search(quadtree, x0, y0) {
 		// return false;
 	});
 }
-
+*/
 
 // Transform all groups in relation to new values:
 // 		- 'groupScale'

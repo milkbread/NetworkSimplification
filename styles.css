@@ -52,3 +52,10 @@ rect {
 #svgContainer {
 	border: dashed 1px;
 }
+
+.affected {
+	fill: #f0f;
+}
+.visited {
+	fill: #00f;
+}

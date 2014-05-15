@@ -8,6 +8,7 @@
 	<link rel="stylesheet" href="http://rawgithub.com/milkbread/JSLibs/master/sidebar.css" />
 	<script src="simplify.js"></script>
 	<script src="simplify_network.js"></script>
+	<script src="../JSLibs/geometrics.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -78,11 +79,11 @@
 		{	name: "lines",
 			description: "Lines (single)",
 			svgGroup: lineGroup,
-			visibility: "hidden"},
+			visibility: "visible"},
 		{	name: "linesnetwork",
 			description: "Lines (network)",
 			svgGroup: lineNetworkGroup,
-			visibility: "visible"},
+			visibility: "hidden"},
 		{	name: "consPoints",
 			description: "Constraining points",
 			svgGroup: consPointGroup,
@@ -187,6 +188,14 @@
 					.attr("d", function(d){ return path(d); })
 					.attr("class", "lineNetwork");
 
+		// Draw the constraining points
+		constrainingPoints = consPointGroup.selectAll(".consPoint")
+			.data(consDataPoints)
+				.enter().append("circle")
+					.attr("cx", function(d) { return d[0]; })
+					.attr("cy", function(d) { return d[1]; })
+					.attr("class", "consPoint");
+
 		// Draw the labels of the lines
 		labels = labelGroup.selectAll(".label")
 			.data(lineData.features)
@@ -199,17 +208,9 @@
 					.attr("value", function(d) { return d.properties.id })
 					.on("click", function() {
 						var selID = parseInt(d3.select(this).attr("value"));
-						addSSelectorSingleLine(selID, path, projection);
+						addSSelectorSingleLine(selID, path, projection, constrainingPoints);
 						lineSelector.setSelectedID(selID);
 					});
-
-		// Draw the constraining points
-		constrainingPoints = consPointGroup.selectAll(".consPoint")
-			.data(pointData.features)
-				.enter().append("circle")
-					.attr("cx", function(d) { return projection(d.geometry.coordinates)[0]; })
-					.attr("cy", function(d) { return projection(d.geometry.coordinates)[1]; })
-					.attr("class", "consPoint");
 
 		transformGroup();
 
@@ -218,14 +219,14 @@
 		lineSelector.select
 			// Add an action for the change of the 'lineSelector'
 			.on("change", function() {
-				addSSelectorSingleLine(lineSelector.selectedID(), path, projection);
+				addSSelectorSingleLine(lineSelector.selectedID(), path, projection, constrainingPoints);
 			});
 
 
 		// initially select the first line
-		addSSelectorSingleLine(1, path, projection);
+		addSSelectorSingleLine(1, path, projection, constrainingPoints);
 
-		addNSelectorSingleLine(multiLineGeom, path, d3.range(numDeletablePoints+1), simplifyNetwork);
+		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection);
 
 	}
 	// Load lineData & pointData and do visualisations
