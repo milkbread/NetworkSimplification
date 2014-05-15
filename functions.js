@@ -91,7 +91,7 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 						type: d.type,
 						coordinates: d.coordinates.map(function(line) {
 							return line.filter(function(point) {
-								return filterPointsSimple(point, quadTree, path, numberOfPoints, projection);
+								return filterPointsSimple(point, quadTree, numberOfPoints, projection);
 							})
 						})
 					}
@@ -138,13 +138,20 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 	} else return point;
 }
 
-function filterPointsSimple(point, quadtree, path, numberOfPoints, projection) {
+function filterPointsSimple(point, quadtree, numberOfPoints, projection) {
 	if (typeof point[2] !== "undefined") {
 		// Check if there is a point in the current triangle
-		if(point[2].rank === numberOfPoints) {
-			search(quadtree, point[2].triangle);
+		// if(point[2].rank === numberOfPoints) {
+		// 	search(quadtree, point[2].triangle, projection);
+		// }
+		if (point[2].rank <= numberOfPoints + 1 ){
+			// console.log("will now search")
+			point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
+			if(point[2].fixed === true) {
+				return point;
+			}
 		}
-		return point[2].rank >= numberOfPoints;
+		return point[2].rank > numberOfPoints;
 	} else return point;
 }
 
