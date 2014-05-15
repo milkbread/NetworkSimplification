@@ -53,15 +53,17 @@ d3.rank = function(multiline) {
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(feature, clearPoints) {
-    if (feature.type !== "MultiLineString") throw new Error("not yet supported");
+  function simplify(geometry, clearPoints, timing) {
+    if (typeof timing !== "undefined" && timing === true) var start = new Date().getMilliseconds();
+
+    if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
 
     var heap = minHeap(),
       maxArea = 0,
       triangles = [],
       triangle;
 
-    var lines = feature.coordinates;
+    var lines = geometry.coordinates;
     lines.forEach(function(line) {
       var points = line;
       for (var i = 1, n = line.length - 1; i < n; ++i) {
@@ -73,7 +75,7 @@ d3.simplifyNetwork = function() {
         }
       }
     });
-    console.log("Number of triangles: " + triangles.length)
+    // console.log("Number of triangles: " + triangles.length)
 
     for (var i = 0, n = triangles.length; i < n; ++i) {
       triangle = triangles[i];
@@ -116,6 +118,8 @@ d3.simplifyNetwork = function() {
       }
     }
 
+    if (typeof timing !== "undefined" && timing === true) console.log('Execution time: ' + (new Date().getMilliseconds() - start) + ' milliseconds');
+
     function update(triangle) {
       heap.remove(triangle);
       triangle[1][2] = area(triangle);
@@ -123,8 +127,8 @@ d3.simplifyNetwork = function() {
       heap.push(triangle);
     }
 
-    console.log("Walkthroughs: " + counter)
-    return feature;
+    // console.log("Walkthroughs: " + counter)
+    return geometry;
   }
 
   simplify.projection = function(_) {
@@ -174,6 +178,14 @@ function minHeap() {
       (compare(object, removed) < 0 ? up : down)(i);
     }
     return i;
+  };
+
+  heap.length = function() {
+    return array.length;
+  };
+
+  heap.show = function() {
+    return array;
   };
 
   function up(i) {

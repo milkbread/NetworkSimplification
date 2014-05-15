@@ -45,6 +45,34 @@ function addSSelectorSingleLine(id, path, projection) {
 		})
 }
 
+function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork) {
+	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
+
+	pointNumberSelectorNetwork.select
+		.on("change", function() {
+			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
+
+			if (numberOfPoints > 0) {
+				simplifyNetwork(multiLineGeom, numberOfPoints, true);
+				d3.rank(multiLineGeom);
+				d3.clean(multiLineGeom);
+			}
+
+			lineNetworkGroup.select(".lineNetwork")
+				.attr("d", function(d) {
+					var geom = {
+						type: d.type,
+						coordinates: d.coordinates.map(function(line) {
+							return line.filter(function(point) {
+								return filterPointsSimple(point, numberOfPoints);
+							})
+						})
+					}
+					return path(geom);
+				});
+		})
+}
+
 function filterPoints(point, numberOfPoints, projection, path, i) {
 	if (typeof point[2] !== "undefined") {
 		// Draw the triangle of the point that was removed last (as its rank is identic with the 'numberOfPoints' to remove)
