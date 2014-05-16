@@ -72,7 +72,7 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 		})
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection) {
+function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis) {
 	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
 
 	pointNumberSelectorNetwork.select
@@ -96,6 +96,10 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 						})
 					}
 					return path(geom);
+				});
+			constrainingPointsVis
+				.classed("affected", function(d) {
+					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
 				});
 		})
 }
@@ -141,10 +145,7 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 function filterPointsSimple(point, quadtree, numberOfPoints, projection) {
 	if (typeof point[2] !== "undefined") {
 		// Check if there is a point in the current triangle
-		// if(point[2].rank === numberOfPoints) {
-		// 	search(quadtree, point[2].triangle, projection);
-		// }
-		if (point[2].rank <= numberOfPoints + 1 ){
+		if (point[2].rank <= numberOfPoints ){
 			// console.log("will now search")
 			point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
 			if(point[2].fixed === true) {
@@ -171,7 +172,7 @@ function transformGroup() {
 	qRectLines.style("stroke-width", .1 / groupScale);
 	qRectPoints.style("stroke-width", .1 / groupScale);
 	boundaries.style("stroke-width", .1 / groupScale);
-	points.attr("r", 3 / groupScale);
+	pointsSingle.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);
 	labels.attr("font-size", 14 / groupScale);

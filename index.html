@@ -47,12 +47,13 @@
 		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
 		qGroupPoints = svg.append("g").attr("id", "qGroupPoints"),
 		boundariesGroup = svg.append("g").attr("id", "boundariesGroup"),
-		pointGroup = svg.append("g").attr("id", "pointGroup"),
+		pointGroupSingle = svg.append("g").attr("id", "pointGroupSingle"),
+		pointGroupNetwork = svg.append("g").attr("id", "pointGroupNetwork"),
 		lineGroup = svg.append("g").attr("id", "lineGroup"),
 		lineNetworkGroup = svg.append("g").attr("id", "lineNetworkGroup"),
 		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		qRectLines, qRectPoints, points, lines, linesNetwork, constrainingPoints, labels;
+		qRectLines, qRectPoints, pointsSingle, pointsNetwork, lines, linesNetwork, constrainingPoints, labels;
 
 	// Build an array of group-objects
 	var groups = [
@@ -72,10 +73,14 @@
 			description: "Labels of Lines",
 			svgGroup: labelGroup,
 			visibility: "visible"},
-		{	name: "points",
-			description: "Points of lines",
-			svgGroup: pointGroup,
+		{	name: "pointsSingle",
+			description: "Points of lines (single)",
+			svgGroup: pointGroupSingle,
 			visibility: "hidden"},
+		{	name: "pointsNetwork",
+			description: "Points of lines (network)",
+			svgGroup: pointGroupNetwork,
+			visibility: "visible"},
 		{	name: "lines",
 			description: "Lines (single)",
 			svgGroup: lineGroup,
@@ -166,7 +171,7 @@
 					.attr("class", "node");
 
 		// Draw all points of the lines
-		points = pointGroup.selectAll(".point")
+		pointsSingle = pointGroupSingle.selectAll(".point")
 			.data(linesDataPoints)
 				.enter().append("circle")
 					.attr("class", "point")
@@ -187,6 +192,23 @@
 				.datum(multiLineGeom)
 					.attr("d", function(d){ return path(d); })
 					.attr("class", "lineNetwork");
+
+		// Draw all points of the network
+		// *** has to be drawn as 'path' to always use the points of the network and ***
+		// *** do not have to reassign it for showing the 'fixed' points) ***
+		pointsNetwork = pointGroupNetwork
+			.append("path")
+				.datum(multiLineGeom)
+					.attr("class", "point")
+					.attr("d", function(d){
+						var allPoints = [];
+						d.coordinates.forEach(function(line){
+							return line.forEach(function(point){
+								allPoints.push(point);
+							});
+						});
+						return path({type: "MultiPoint", coordinates: allPoints});
+					});
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -226,7 +248,7 @@
 		// initially select the first line
 		addSSelectorSingleLine(1, path, projection, constrainingPoints);
 
-		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection);
+		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection, constrainingPoints);
 
 	}
 	// Load lineData & pointData and do visualisations
