@@ -72,7 +72,7 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 		})
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis) {
+function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointsNetworkVis, pointGroupNetwork) {
 	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
 
 	pointNumberSelectorNetwork.select
@@ -85,13 +85,16 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 				d3.clean(multiLineGeom);
 			}
 
+			linesNetworkDataPoints = [];
 			lineNetworkGroup.select(".lineNetwork")
 				.attr("d", function(d) {
 					var geom = {
 						type: d.type,
 						coordinates: d.coordinates.map(function(line) {
 							return line.filter(function(point) {
-								return filterPointsSimple(point, quadTree, numberOfPoints, projection);
+								var filteredPoint = filterPointsSimple(point, quadTree, numberOfPoints, projection);
+								if(filteredPoint === true) linesNetworkDataPoints.push(point);
+								return filteredPoint;
 							})
 						})
 					}
@@ -101,6 +104,15 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 				.classed("affected", function(d) {
 					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
 				});
+
+			pointsNetwork = pointGroupNetwork.selectAll(".point").remove();
+			pointsNetwork = pointGroupNetwork.selectAll(".point")
+				.data(linesNetworkDataPoints).enter().append("circle")
+					.attr("class", "point")
+					.attr("cx", function(d) { return projection(d)[0]; })
+					.attr("cy", function(d) { return projection(d)[1]; })
+					.classed("fixed", function(d){return typeof d[2] !== "undefined" && d[2].fixed === true ? true : false;})
+			transformGroup();
 		})
 }
 
@@ -149,11 +161,11 @@ function filterPointsSimple(point, quadtree, numberOfPoints, projection) {
 			// console.log("will now search")
 			point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
 			if(point[2].fixed === true) {
-				return point;
+				return true;
 			}
 		}
 		return point[2].rank > numberOfPoints;
-	} else return point;
+	} else return true;
 }
 
 // Transform all groups in relation to new values:
@@ -173,6 +185,7 @@ function transformGroup() {
 	qRectPoints.style("stroke-width", .1 / groupScale);
 	boundaries.style("stroke-width", .1 / groupScale);
 	pointsSingle.attr("r", 3 / groupScale);
+	pointsNetwork.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);
 	labels.attr("font-size", 14 / groupScale);

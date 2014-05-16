@@ -56,6 +56,6 @@ rect {
 .affected {
 	fill: #f0f;
 }
-.visited {
-	fill: #00f;
+.fixed {
+	fill: #f00;
 }

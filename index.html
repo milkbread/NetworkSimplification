@@ -53,7 +53,7 @@
 		lineNetworkGroup = svg.append("g").attr("id", "lineNetworkGroup"),
 		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		qRectLines, qRectPoints, pointsSingle, pointsNetwork, lines, linesNetwork, constrainingPoints, labels;
+		qRectLines, qRectPoints, pointsSingle, pointsNetwork, lines, linesNetwork, constrainingPoints, linesNetworkDataPoints = [], labels;
 
 	// Build an array of group-objects
 	var groups = [
@@ -194,21 +194,16 @@
 					.attr("class", "lineNetwork");
 
 		// Draw all points of the network
-		// *** has to be drawn as 'path' to always use the points of the network and ***
-		// *** do not have to reassign it for showing the 'fixed' points) ***
-		pointsNetwork = pointGroupNetwork
-			.append("path")
-				.datum(multiLineGeom)
+		multiLineGeom.coordinates.forEach(function(line){
+			line.forEach(function(point){
+				linesNetworkDataPoints.push(point);
+			});
+		});
+		pointsNetwork = pointGroupNetwork.selectAll(".point")
+			.data(linesNetworkDataPoints).enter().append("circle")
 					.attr("class", "point")
-					.attr("d", function(d){
-						var allPoints = [];
-						d.coordinates.forEach(function(line){
-							return line.forEach(function(point){
-								allPoints.push(point);
-							});
-						});
-						return path({type: "MultiPoint", coordinates: allPoints});
-					});
+					.attr("cx", function(d) { return projection(d)[0]; })
+					.attr("cy", function(d) { return projection(d)[1]; });
 
 		// Draw the constraining points
 		constrainingPoints = consPointGroup.selectAll(".consPoint")
@@ -248,7 +243,7 @@
 		// initially select the first line
 		addSSelectorSingleLine(1, path, projection, constrainingPoints);
 
-		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection, constrainingPoints);
+		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection, constrainingPoints, pointsNetwork, pointGroupNetwork);
 
 	}
 	// Load lineData & pointData and do visualisations
