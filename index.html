@@ -53,7 +53,9 @@
 		lineNetworkGroup = svg.append("g").attr("id", "lineNetworkGroup"),
 		labelGroup = svg.append("g").attr("id", "labelGroup"),
 		consPointGroup = svg.append("g").attr("id", "consPointGroup"),
-		qRectLines, qRectPoints, pointsSingle, pointsNetwork, lines, linesNetwork, constrainingPoints, linesNetworkDataPoints = [], labels;
+		linesSingleDataPoints = [],
+		linesNetworkDataPoints = [],
+		qRectLines, qRectPoints, pointsSingle, pointsNetwork, lines, linesNetwork, constrainingPoints, labels;
 
 	// Build an array of group-objects
 	var groups = [
@@ -76,11 +78,11 @@
 		{	name: "pointsSingle",
 			description: "Points of lines (single)",
 			svgGroup: pointGroupSingle,
-			visibility: "hidden"},
+			visibility: "visible"},
 		{	name: "pointsNetwork",
 			description: "Points of lines (network)",
 			svgGroup: pointGroupNetwork,
-			visibility: "visible"},
+			visibility: "hidden"},
 		{	name: "lines",
 			description: "Lines (single)",
 			svgGroup: lineGroup,
@@ -125,21 +127,14 @@
 
 		var path = d3.geo.path()
 				.projection(projection),
-			linesDataPoints = getAllPoints(lineData, projection),
 			consDataPoints = getAllPoints(pointData, projection);
 			multiLineGeom = multilineData.features[0].geometry;
-
-		// Add some basic information to the sidebar
-		var infos = sidebarContainer.append("div");
-		infos.append('h2').text("Basic infos");
-		infos.append('p').text("Total number of Points: " + linesDataPoints.length);
-		var numDeletablePoints = linesDataPoints.length - (lineData.features.length * 2);
-		infos.append('p').text("Inner number of Points: " + numDeletablePoints);
+		linesSingleDataPoints = getAllPoints(lineData, projection);
 
 		// Inititialise the quadtree
 		var rawQuadtree = d3.geom.quadtree();
 		// rawQuadtree.extent(extent)			//can generate: 'Maximum call stack size exceeded'
-		quadtreeLines = rawQuadtree(linesDataPoints);
+		quadtreeLines = rawQuadtree(linesSingleDataPoints);
 		quadtreePoints = rawQuadtree(consDataPoints);
 
 		// Draw the rectangles of the quadtree of all points of all lines
@@ -170,14 +165,6 @@
 					.attr("height", function(d) { return path.bounds(d.geometry)[1][1] - path.bounds(d.geometry)[0][1]; })
 					.attr("class", "node");
 
-		// Draw all points of the lines
-		pointsSingle = pointGroupSingle.selectAll(".point")
-			.data(linesDataPoints)
-				.enter().append("circle")
-					.attr("class", "point")
-					.attr("cx", function(d) { return d[0]; })
-					.attr("cy", function(d) { return d[1]; });
-
 		// Draw all lines (single)
 		lines = lineGroup.selectAll(".line")
 			.data(lineData.features)
@@ -186,6 +173,14 @@
 					.attr("class", "line")
 					.attr("id", function(d) { return "line" + d.properties.id });
 
+		// Draw all points of the lines (single)
+		pointsSingle = pointGroupSingle.selectAll(".point")
+			// .data(linesSingleDataPoints)
+			// 	.enter().append("circle")
+			// 		.attr("class", "point")
+			// 		.attr("cx", function(d) { return d[0]; })
+			// 		.attr("cy", function(d) { return d[1]; });
+
 		// Draw all lines (network)
 		linesNetwork = lineNetworkGroup
 			.append("path")
@@ -193,7 +188,7 @@
 					.attr("d", function(d){ return path(d); })
 					.attr("class", "lineNetwork");
 
-		// Draw all points of the network
+		// Draw all points of the lines (network)
 		multiLineGeom.coordinates.forEach(function(line){
 			line.forEach(function(point){
 				linesNetworkDataPoints.push(point);
@@ -239,11 +234,17 @@
 				addSSelectorSingleLine(lineSelector.selectedID(), path, projection, constrainingPoints);
 			});
 
+		// Add some basic information to the sidebar
+		var infos = sidebarContainer.append("div");
+		infos.append('h2').text("Basic infos");
+		infos.append('p').text("Total number of Points: " + linesSingleDataPoints.length);
+		var numDeletablePoints = linesSingleDataPoints.length - (lineData.features.length * 2);
+		infos.append('p').text("Inner number of Points: " + numDeletablePoints);
 
 		// initially select the first line
 		addSSelectorSingleLine(1, path, projection, constrainingPoints);
 
-		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection, constrainingPoints, pointsNetwork, pointGroupNetwork);
+		addNSelectorSingleLine(multiLineGeom, path, quadtreePoints, d3.range(numDeletablePoints+1), simplifyNetwork, projection, constrainingPoints, pointGroupNetwork);
 
 	}
 	// Load lineData & pointData and do visualisations

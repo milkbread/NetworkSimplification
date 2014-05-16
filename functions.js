@@ -56,12 +56,15 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 			lineGroup.select("#line" + id)
 				.attr("d", function(d) {
 					// remove the class 'current' from all triangles
+					linesSingleDataPoints = [];
 					triangleGroup.selectAll(".triangle").classed("current", false);
 					return path({
 						type: d.geometry.type,
 						coordinates: d.geometry.coordinates.filter(
 							function(point, i) {
-								return filterPoints(point, numberOfPoints, projection, path, i);
+								var filteredPoint = filterPoints(point, numberOfPoints, projection, path, i);
+								if(filteredPoint === true) linesSingleDataPoints.push(point);
+								return filteredPoint;
 							})
 					});
 				});
@@ -69,10 +72,21 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 				.classed("affected", function(d) {
 					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
 				});
+			// pointGroupSingle.selectAll(".point").remove();
+			pointsSingle = pointGroupSingle.selectAll(".point").data(linesSingleDataPoints);
+
+			pointsSingle.classed("fixed", function(d){return typeof d[2] !== "undefined" && d[2].fixed === true ? true : false;})
+			pointsSingle.enter().append("circle")
+					.attr("class", "point")
+					.attr("cx", function(d) { return projection(d)[0]; })
+					.attr("cy", function(d) { return projection(d)[1]; })
+					.classed("fixed", function(d){return typeof d[2] !== "undefined" && d[2].fixed === true ? true : false;})
+			pointsSingle.exit().remove();
+			transformGroup();
 		})
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointsNetworkVis, pointGroupNetwork) {
+function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointGroupNetwork) {
 	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
 
 	pointNumberSelectorNetwork.select
@@ -105,7 +119,7 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
 				});
 
-			pointsNetwork = pointGroupNetwork.selectAll(".point").remove();
+			pointGroupNetwork.selectAll(".point").remove();
 			pointsNetwork = pointGroupNetwork.selectAll(".point")
 				.data(linesNetworkDataPoints).enter().append("circle")
 					.attr("class", "point")
@@ -184,7 +198,7 @@ function transformGroup() {
 	qRectLines.style("stroke-width", .1 / groupScale);
 	qRectPoints.style("stroke-width", .1 / groupScale);
 	boundaries.style("stroke-width", .1 / groupScale);
-	pointsSingle.attr("r", 3 / groupScale);
+	pointsSingle.attr("r", function(d){ return typeof d[2] !== "undefined" && d[2].fixed === true ? 6 / groupScale : 3 / groupScale;});
 	pointsNetwork.attr("r", 3 / groupScale);
 	lines.style("stroke-width", 1 / groupScale);
 	constrainingPoints.attr("r", 5 / groupScale);
