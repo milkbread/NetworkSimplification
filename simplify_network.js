@@ -47,17 +47,42 @@ d3.rank = function(multiline) {
   multiline.coordinates.forEach(function(line, i) {
     line.forEach(function(point, j) {
       if (typeof point[2] !== "undefined") {
-        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: false}
+      // if(typeof point[4] !== "undefined") console.log('ok...there is a true')
+        var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
+        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: fixed}
         point.pop();  //remove point[3] ~> the triangle
       }
     });
   });
 };
 
+// Find the nodes within the specified rectangle.
+function searchInQuadtree(quadtree, triangle, projection) {
+  var foundConstPoint = false;
+  quadtree.visit(function(node, x1, y1, x2, y2) {
+    // Project triangle points to have comparable values
+    var triangle_ = triangle.map(function(p){return projection(p);})
+    // Check if there is a point in the node
+    var p = node.point;
+    if (p) {
+      // p[2] = 'visited';
+      if (pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2])) {
+        p[2] = 'affected';
+        foundConstPoint = true;
+      }
+    }
+    // get the extent of the triangle
+    var extent = getExtentOfTriangle(triangle_);
+    // return true if extent lies not in the extent of the node (does not search on in this node)
+    return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
+  });
+  return foundConstPoint;
+}
+
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(geometry, clearPoints, timing) {
+  function simplify(geometry, clearPoints, quadtreePoints, timing) {
     if (typeof timing !== "undefined" && timing === true) var start = new Date().getMilliseconds();
 
     if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
@@ -104,24 +129,30 @@ d3.simplifyNetwork = function() {
       // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
       // else maxArea = triangle[1][2];
 
-      if (triangle.previous) {
-        triangle.previous.next = triangle.next;
-        triangle.previous[2] = triangle[2];
-        update(triangle.previous);
-      } else {
-        triangle[0].area = triangle[1].area;
-        triangle[0][2] = triangle[1][2];
-        triangle[0][3] = triangle[1][3];
-      }
+      var conflict = searchInQuadtree(quadtreePoints, triangle[1][3], projection);
 
-      if (triangle.next) {
-        triangle.next.previous = triangle.previous;
-        triangle.next[0] = triangle[0];
-        update(triangle.next);
+      if(conflict === false){
+        if (triangle.previous) {
+          triangle.previous.next = triangle.next;
+          triangle.previous[2] = triangle[2];
+          update(triangle.previous);
+        } else {
+          triangle[0].area = triangle[1].area;
+          triangle[0][2] = triangle[1][2];
+          triangle[0][3] = triangle[1][3];
+        }
+
+        if (triangle.next) {
+          triangle.next.previous = triangle.previous;
+          triangle.next[0] = triangle[0];
+          update(triangle.next);
+        } else {
+          triangle[2].area = triangle[1].area;
+          triangle[2][2] = triangle[1][2];
+          triangle[2][3] = triangle[1][3];
+        }
       } else {
-        triangle[2].area = triangle[1].area;
-        triangle[2][2] = triangle[1][2];
-        triangle[2][3] = triangle[1][3];
+        triangle[1][4] = true;
       }
 
       counter ++;

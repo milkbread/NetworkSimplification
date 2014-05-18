@@ -94,7 +94,7 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
 
 			if (numberOfPoints > 0) {
-				simplifyNetwork(multiLineGeom, numberOfPoints, true);
+				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, true);
 				d3.rank(multiLineGeom);
 				d3.clean(multiLineGeom);
 			}
@@ -171,14 +171,14 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 function filterPointsSimple(point, quadtree, numberOfPoints, projection) {
 	if (typeof point[2] !== "undefined") {
 		// Check if there is a point in the current triangle
-		if (point[2].rank <= numberOfPoints ){
-			// console.log("will now search")
-			point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
-			if(point[2].fixed === true) {
-				return true;
-			}
-		}
-		return point[2].rank > numberOfPoints;
+		// if (point[2].rank <= numberOfPoints ){
+		// 	// console.log("will now search")
+		// 	point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
+		// 	if(point[2].fixed === true) {
+		// 		return true;
+		// 	}
+		// }
+		return point[2].rank > numberOfPoints || point[2].fixed === true;
 	} else return true;
 }
 
