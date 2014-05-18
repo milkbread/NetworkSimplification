@@ -3,14 +3,10 @@ d3.clean = function(multiline) {
   // Test if the first or last point of each line has a 'third' value - it shouldn't have it!!!
   multiline.coordinates.forEach(function(line) {
     var length = line.length;
-    // Check the first point
-    if (typeof line[0][2] !== "undefined") {
-      line[0].pop();
-    }
-    // Check the last point
-    if (typeof line[length-1][2] !== "undefined") {
-      line[length-1].pop();
-    }
+    // Define the first point
+    line[0][2] = {fixed: true, startEnd: true};
+    // Define the last point
+    line[length-1][2] = {fixed: true, startEnd: true};
   });
 };
 
@@ -47,7 +43,6 @@ d3.rank = function(multiline) {
   multiline.coordinates.forEach(function(line, i) {
     line.forEach(function(point, j) {
       if (typeof point[2] !== "undefined") {
-      // if(typeof point[4] !== "undefined") console.log('ok...there is a true')
         var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
         point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: fixed}
         point.pop();  //remove point[3] ~> the triangle

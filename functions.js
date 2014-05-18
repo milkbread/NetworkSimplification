@@ -86,50 +86,6 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 		})
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointGroupNetwork) {
-	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
-
-	pointNumberSelectorNetwork.select
-		.on("change", function() {
-			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
-
-			if (numberOfPoints > 0) {
-				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, true);
-				d3.rank(multiLineGeom);
-				d3.clean(multiLineGeom);
-			}
-
-			linesNetworkDataPoints = [];
-			lineNetworkGroup.select(".lineNetwork")
-				.attr("d", function(d) {
-					var geom = {
-						type: d.type,
-						coordinates: d.coordinates.map(function(line) {
-							return line.filter(function(point) {
-								var filteredPoint = filterPointsSimple(point, quadTree, numberOfPoints, projection);
-								if(filteredPoint === true) linesNetworkDataPoints.push(point);
-								return filteredPoint;
-							})
-						})
-					}
-					return path(geom);
-				});
-			constrainingPointsVis
-				.classed("affected", function(d) {
-					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
-				});
-
-			pointGroupNetwork.selectAll(".point").remove();
-			pointsNetwork = pointGroupNetwork.selectAll(".point")
-				.data(linesNetworkDataPoints).enter().append("circle")
-					.attr("class", "point")
-					.attr("cx", function(d) { return projection(d)[0]; })
-					.attr("cy", function(d) { return projection(d)[1]; })
-					.classed("fixed", function(d){return typeof d[2] !== "undefined" && d[2].fixed === true ? true : false;})
-			transformGroup();
-		})
-}
-
 function filterPoints(point, numberOfPoints, projection, path, i) {
 	if (typeof point[2] !== "undefined") {
 		// Stop directly when the point got the 'fixed'-value
@@ -168,17 +124,53 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 	} else return point;
 }
 
-function filterPointsSimple(point, quadtree, numberOfPoints, projection) {
-	if (typeof point[2] !== "undefined") {
-		// Check if there is a point in the current triangle
-		// if (point[2].rank <= numberOfPoints ){
-		// 	// console.log("will now search")
-		// 	point[2].fixed = search(quadtreePoints, point[2].triangle, projection);
-		// 	if(point[2].fixed === true) {
-		// 		return true;
-		// 	}
-		// }
-		return point[2].rank > numberOfPoints || point[2].fixed === true;
+function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointGroupNetwork) {
+	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
+
+	pointNumberSelectorNetwork.select
+		.on("change", function() {
+			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
+
+			if (numberOfPoints > 0) {
+				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, true);
+				d3.rank(multiLineGeom);
+				d3.clean(multiLineGeom);
+			}
+
+			linesNetworkDataPoints = [];
+			lineNetworkGroup.select(".lineNetwork")
+				.attr("d", function(d) {
+					var geom = {
+						type: d.type,
+						coordinates: d.coordinates.map(function(line) {
+							return line.filter(function(point) {
+								var filteredPoint = filterPointsSimple(point, numberOfPoints);
+								if(filteredPoint === true) linesNetworkDataPoints.push(point);
+								return filteredPoint;
+							})
+						})
+					}
+					return path(geom);
+				});
+			constrainingPointsVis
+				.classed("affected", function(d) {
+					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
+				});
+
+			pointGroupNetwork.selectAll(".point").remove();
+			pointsNetwork = pointGroupNetwork.selectAll(".point")
+				.data(linesNetworkDataPoints).enter().append("circle")
+					.attr("class", "point")
+					.attr("cx", function(d) { return projection(d)[0]; })
+					.attr("cy", function(d) { return projection(d)[1]; })
+					.classed("fixed", function(d){return d[2].fixed === true && d[2].startEnd !== true? true : false;})
+			transformGroup();
+		})
+}
+
+function filterPointsSimple(point, numberOfPoints) {
+	if (point[2].fixed === false) {
+		return point[2].rank > numberOfPoints;
 	} else return true;
 }
 
