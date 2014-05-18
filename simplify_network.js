@@ -15,6 +15,10 @@ d3.clean = function(multiline) {
 };
 
 d3.rank = function(multiline) {
+  // We also re-structure the data while ranking:
+  // INPUT:   [x, y, area, triangle]
+  // OUTPUT:  [x, y, {area, triangle, rank, fixed}]
+
   // Get all triangles
   var triangles = [], i = 0;
   multiline.coordinates.forEach(function(line, i) {
@@ -44,7 +48,7 @@ d3.rank = function(multiline) {
     line.forEach(function(point, j) {
       if (typeof point[2] !== "undefined") {
         point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: false}
-        point.pop();
+        point.pop();  //remove point[3] ~> the triangle
       }
     });
   });
@@ -69,6 +73,7 @@ d3.simplifyNetwork = function() {
       for (var i = 1, n = line.length - 1; i < n; ++i) {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
+          triangle.area = area(triangle)
           triangle[1][3] = triangle;
           triangles.push(triangle);
           heap.push(triangle);
@@ -81,7 +86,12 @@ d3.simplifyNetwork = function() {
       triangle = triangles[i];
       triangle.previous = triangles[i - 1];
       triangle.next = triangles[i + 1];
+      triangle.area = triangle[1].area
     }
+
+    triangles.sort(function(a, b) {
+      return a.area - b.area;
+    });
 
     var counter = 0;
 
@@ -91,14 +101,15 @@ d3.simplifyNetwork = function() {
       // to be eliminated, use the latterâ€™s area instead. This ensures that the
       // current point cannot be eliminated without eliminating previously-
       // eliminated points.
-      if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
-      else maxArea = triangle[1][2];
+      // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
+      // else maxArea = triangle[1][2];
 
       if (triangle.previous) {
         triangle.previous.next = triangle.next;
         triangle.previous[2] = triangle[2];
         update(triangle.previous);
       } else {
+        triangle[0].area = triangle[1].area;
         triangle[0][2] = triangle[1][2];
         triangle[0][3] = triangle[1][3];
       }
@@ -108,6 +119,7 @@ d3.simplifyNetwork = function() {
         triangle.next[0] = triangle[0];
         update(triangle.next);
       } else {
+        triangle[2].area = triangle[1].area;
         triangle[2][2] = triangle[1][2];
         triangle[2][3] = triangle[1][3];
       }
@@ -122,6 +134,7 @@ d3.simplifyNetwork = function() {
 
     function update(triangle) {
       heap.remove(triangle);
+      triangle[1].area = area(triangle);
       triangle[1][2] = area(triangle);
       triangle[1][3] = triangle;
       heap.push(triangle);
