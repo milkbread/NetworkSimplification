@@ -124,7 +124,7 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 	} else return point;
 }
 
-function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNetwork, projection, constrainingPointsVis, pointGroupNetwork) {
+function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, constrainingPointsVis) {
 	pointNumberSelectorNetwork.addElements(range.map(function(d) {return {properties: {id: d}}}), "");
 
 	pointNumberSelectorNetwork.select
@@ -137,15 +137,17 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 				d3.clean(multiLineGeom);
 			}
 
-			linesNetworkDataPoints = [];
+			// linesNetworkDataPoints = [];
 			lineNetworkGroup.select(".lineNetwork")
 				.attr("d", function(d) {
+					var index = 0;
 					var geom = {
 						type: d.type,
 						coordinates: d.coordinates.map(function(line) {
 							return line.filter(function(point) {
 								var filteredPoint = filterPointsSimple(point, numberOfPoints);
-								if(filteredPoint === true) linesNetworkDataPoints.push(point);
+								linesNetworkDataPoints[index][2].hidden = !filteredPoint;
+								index ++;
 								return filteredPoint;
 							})
 						})
@@ -154,17 +156,12 @@ function addNSelectorSingleLine(multiLineGeom, path, quadTree, range, simplifyNe
 				});
 			constrainingPointsVis
 				.classed("affected", function(d) {
-					return typeof d[2] !== "undefined" && d[2] === "affected" ? true : false;
+					return typeof d[2] !== "undefined" && d[2] === "affected";
 				});
 
-			pointGroupNetwork.selectAll(".point").remove();
-			pointsNetwork = pointGroupNetwork.selectAll(".point")
-				.data(linesNetworkDataPoints).enter().append("circle")
-					.attr("class", "point")
-					.attr("cx", function(d) { return projection(d)[0]; })
-					.attr("cy", function(d) { return projection(d)[1]; })
+			pointsNetwork
+					.classed("hidden", function(d){return d[2].hidden;})
 					.classed("fixed", function(d){return d[2].fixed === true && d[2].startEnd !== true? true : false;})
-			transformGroup();
 		})
 }
 
