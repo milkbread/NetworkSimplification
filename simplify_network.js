@@ -113,7 +113,7 @@ d3.simplifyNetwork = function() {
 
     if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
 
-    var rawQuadtree_ = d3.geom.quadtree();
+    var rawQuadtree = d3.geom.quadtree();
 
     var heap = minHeap(),
       maxArea = 0,
@@ -127,8 +127,6 @@ d3.simplifyNetwork = function() {
       for (var i = 1; i < line.length - 1; i++) {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
-          triangle.area = area(triangle)
-          // triangle[1][3] = triangle;
           triangles.push(triangle);
           heap.push(triangle);
         }
@@ -137,6 +135,7 @@ d3.simplifyNetwork = function() {
         triangle = triangles[i];
         triangle.previous = triangles[i - 1];
         triangle.next = triangles[i + 1];
+        // define the lineIndex to enable differentiation during searching in quadtree
         triangle.lineIndex = index;
         triangle.area = triangle[1].area
       }
@@ -151,8 +150,7 @@ d3.simplifyNetwork = function() {
     // });
 
     var counter = 0;
-
-    var quadtreeLines = rawQuadtree_(linePoints);
+    var quadtreeLines = rawQuadtree(linePoints);
 
     while (triangle = heap.pop()) {
 
@@ -172,9 +170,7 @@ d3.simplifyNetwork = function() {
           triangle.previous[2] = triangle[2];
           update(triangle.previous);
         } else {
-          triangle[0].area = triangle[1].area;
           triangle[0][2] = triangle[1][2];
-          // triangle[0][3] = triangle[1][3];
         }
 
         if (triangle.next) {
@@ -182,9 +178,7 @@ d3.simplifyNetwork = function() {
           triangle.next[0] = triangle[0];
           update(triangle.next);
         } else {
-          triangle[2].area = triangle[1].area;
           triangle[2][2] = triangle[1][2];
-          // triangle[2][3] = triangle[1][3];
         }
       } else {
         triangle[1][3] = triangle;
@@ -201,9 +195,7 @@ d3.simplifyNetwork = function() {
 
     function update(triangle) {
       heap.remove(triangle);
-      triangle[1].area = area(triangle);
       triangle[1][2] = area(triangle);
-      // triangle[1][3] = triangle;
       heap.push(triangle);
     }
 
