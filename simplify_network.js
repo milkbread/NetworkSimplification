@@ -20,8 +20,9 @@ d3.rank = function(multiline) {
   multiline.coordinates.forEach(function(line, i) {
     var pCounter = 0;
     line.forEach(function(point, j) {
+      var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
       // omit 1st AND last point
-      if(j>0 && j<line.length-1) {
+      if(j>0 && j<line.length-1 && fixed === false) {
         triangles.push({area: point[2], lineIndex: i, pointIndex: pCounter});
         pCounter++;
       }
@@ -48,9 +49,11 @@ d3.rank = function(multiline) {
     line.forEach(function(point, j) {
       // omit 1st AND last point
       var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
-      if (j>0 && j<line.length-1) {
+      if (j>0 && j<line.length-1 && fixed === false) {
         point[2] = {area: point[2], rank: trianglesObject[i][pCounter], triangle: point[3], fixed: fixed}
         pCounter++;
+      } else if(j>0 && j<line.length-1 && fixed === true) {
+        point[2] = {area: point[2], triangle: point[3], fixed: fixed}
       } else {
         point[2] = {fixed: true, startEnd: true};
       }
