@@ -133,7 +133,7 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
 
 			if (numberOfPoints > 0) {
-				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, quadtreeLines, true);
+				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, true);
 				d3.rank(multiLineGeom);
 				// d3.clean(multiLineGeom);
 			}

@@ -63,7 +63,7 @@ d3.rank = function(multiline) {
 };
 
 // Find the nodes within the specified rectangle.
-function searchInQuadtree(quadtree, triangle, projection) {
+function searchCPointInQuadtree(quadtree, triangle, projection) {
   var foundConstPoint = false;
   quadtree.visit(function(node, x1, y1, x2, y2) {
     // Project triangle points to have comparable values
@@ -85,20 +85,43 @@ function searchInQuadtree(quadtree, triangle, projection) {
   return foundConstPoint;
 }
 
+function searchCLineInQuadtree(quadtree, triangle) {
+  var foundConstPoint = false;
+  quadtree.visit(function(node, x1, y1, x2, y2) {
+    // Check if there is a point in the node
+    var p = node.point;
+    if (p) {
+      // console.log(p)
+      // p[2] = 'visited';
+      if (pointInTriangle(p, triangle[0], triangle[1], triangle[2]) && triangle.lineIndex !== p[2]) {
+        foundConstPoint = true;
+      }
+    }
+    // get the extent of the triangle
+    var extent = getExtentOfTriangle(triangle);
+    // return true if extent lies not in the extent of the node (does not search on in this node)
+    return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
+  });
+  return foundConstPoint;
+}
+
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(geometry, clearPoints, quadtreePoints, quadtreeLines, timing) {
+  function simplify(geometry, clearPoints, quadtreePoints, timing) {
     if (typeof timing !== "undefined" && timing === true) var start = new Date().getMilliseconds();
 
     if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
 
+    var rawQuadtree_ = d3.geom.quadtree();
+
     var heap = minHeap(),
       maxArea = 0,
       triangle;
+    var linePoints = [];
 
     var lines = geometry.coordinates;
-    lines.forEach(function(line) {
+    lines.forEach(function(line, index) {
       var points = line;
       var triangles = [];
       for (var i = 1; i < line.length - 1; i++) {
@@ -114,8 +137,12 @@ d3.simplifyNetwork = function() {
         triangle = triangles[i];
         triangle.previous = triangles[i - 1];
         triangle.next = triangles[i + 1];
+        triangle.lineIndex = index;
         triangle.area = triangle[1].area
       }
+      linePoints = linePoints.concat(points.map(function(p) {
+        return [p[0], p[1], index];
+      }));
     });
     // console.log("Number of triangles: " + triangles.length)
 
@@ -124,6 +151,8 @@ d3.simplifyNetwork = function() {
     // });
 
     var counter = 0;
+
+    var quadtreeLines = rawQuadtree_(linePoints);
 
     while (triangle = heap.pop()) {
 
@@ -134,7 +163,8 @@ d3.simplifyNetwork = function() {
       // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
       // else maxArea = triangle[1][2];
 
-      var conflict = searchInQuadtree(quadtreePoints, triangle, projection);
+      // var conflict = searchCPointInQuadtree(quadtreePoints, triangle, projection);
+      var conflict = searchCLineInQuadtree(quadtreeLines, triangle);
 
       if(conflict === false){
         if (triangle.previous) {
