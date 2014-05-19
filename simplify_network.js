@@ -194,8 +194,10 @@ d3.simplifyNetwork = function() {
     if (typeof timing !== "undefined" && timing === true) console.log('Execution time: ' + (new Date().getMilliseconds() - start) + ' milliseconds');
 
     function update(triangle) {
+      // remove the triangle from the heap-array
       heap.remove(triangle);
       triangle[1][2] = area(triangle);
+      // add the triangle it 'sorted'
       heap.push(triangle);
     }
 
@@ -252,19 +254,13 @@ function minHeap() {
     return i;
   };
 
-  heap.length = function() {
-    return array.length;
-  };
-
-  heap.show = function() {
-    return array;
-  };
-
   function up(i) {
     var object = array[i];
+    // move object up through the array onto correct place
     while (i > 0) {
       var up = ((i + 1) >> 1) - 1,
           parent = array[up];
+      // compare area of object and parent ... stop when object is bigger than parent
       if (compare(object, parent) >= 0) break;
       array[parent.index = i] = parent;
       array[object.index = i = up] = object;
@@ -273,6 +269,7 @@ function minHeap() {
 
   function down(i) {
     var object = array[i];
+    // move object down through the array onto the correct place
     while (true) {
       var right = (i + 1) << 1,
           left = right - 1,
