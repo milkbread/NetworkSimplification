@@ -18,9 +18,12 @@ d3.rank = function(multiline) {
   // Get all triangles
   var triangles = [], i = 0;
   multiline.coordinates.forEach(function(line, i) {
+    var pCounter = 0;
     line.forEach(function(point, j) {
-      if(typeof point[2] !== "undefined") {
-        triangles.push({area: point[2], lineIndex: i, pointIndex: j});
+      // omit 1st AND last point
+      if(j>0 && j<line.length-1) {
+        triangles.push({area: point[2], lineIndex: i, pointIndex: pCounter});
+        pCounter++;
       }
     });
   });
@@ -41,12 +44,17 @@ d3.rank = function(multiline) {
   });
   // Set rank to each point
   multiline.coordinates.forEach(function(line, i) {
+    var pCounter = 0;
     line.forEach(function(point, j) {
-      if (typeof point[2] !== "undefined") {
-        var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
-        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: fixed}
-        point.pop();  //remove point[3] ~> the triangle
+      // omit 1st AND last point
+      var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
+      if (j>0 && j<line.length-1) {
+        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], triangle: point[3], fixed: fixed}
+        pCounter++;
+      } else {
+        point[2] = {fixed: true, startEnd: true};
       }
+      point.splice(3, point.length);  //remove all other 'attributes' (if some exist)
     });
   });
 };
@@ -152,7 +160,7 @@ d3.simplifyNetwork = function() {
 
       counter ++;
       if (typeof clearPoints !== "undefined" && counter === clearPoints) {
-        break;
+        // break;
       }
     }
 
