@@ -3,24 +3,28 @@ d3.clean = function(multiline) {
   // Test if the first or last point of each line has a 'third' value - it shouldn't have it!!!
   multiline.coordinates.forEach(function(line) {
     var length = line.length;
-    // Check the first point
-    if (typeof line[0][2] !== "undefined") {
-      line[0].pop();
-    }
-    // Check the last point
-    if (typeof line[length-1][2] !== "undefined") {
-      line[length-1].pop();
-    }
+    // Define the first point
+    line[0][2] = {fixed: true, startEnd: true};
+    // Define the last point
+    line[length-1][2] = {fixed: true, startEnd: true};
   });
 };
 
 d3.rank = function(multiline) {
+  // We also re-structure the data while ranking:
+  // INPUT:   [x, y, area, triangle]
+  // OUTPUT:  [x, y, {area, triangle, rank, fixed}]
+
   // Get all triangles
   var triangles = [], i = 0;
   multiline.coordinates.forEach(function(line, i) {
+    var pCounter = 0;
     line.forEach(function(point, j) {
-      if(typeof point[2] !== "undefined") {
-        triangles.push({area: point[2], lineIndex: i, pointIndex: j});
+      var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
+      // omit 1st AND last point
+      if(j>0 && j<line.length-1 && fixed === false) {
+        triangles.push({area: point[2], lineIndex: i, pointIndex: pCounter});
+        pCounter++;
       }
     });
   });
@@ -41,49 +45,114 @@ d3.rank = function(multiline) {
   });
   // Set rank to each point
   multiline.coordinates.forEach(function(line, i) {
+    var pCounter = 0;
     line.forEach(function(point, j) {
-      if (typeof point[2] !== "undefined") {
-        point[2] = {area: point[2], rank: trianglesObject[i][j], triangle: point[3], fixed: false}
-        point.pop();
+      // omit 1st AND last point
+      var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
+      if (j>0 && j<line.length-1 && fixed === false) {
+        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], fixed: fixed}
+        pCounter++;
+      } else if(j>0 && j<line.length-1 && fixed === true) {
+        point[2] = {area: point[2], triangle: point[3], fixed: fixed}
+      } else {
+        point[2] = {fixed: true, startEnd: true};
       }
+      point.splice(3, point.length);  //remove all other 'attributes' (if some exist)
     });
   });
 };
 
+// Find the nodes within the specified rectangle.
+function searchCPointInQuadtree(quadtree, triangle, projection) {
+  var foundConstPoint = false;
+  quadtree.visit(function(node, x1, y1, x2, y2) {
+    // Project triangle points to have comparable values
+    var triangle_ = triangle.map(function(p){return projection(p);})
+    // Check if there is a point in the node
+    var p = node.point;
+    if (p) {
+      // p[2] = 'visited';
+      if (pointInTriangle(p, triangle_[0], triangle_[1], triangle_[2])) {
+        p[2] = 'affected';
+        foundConstPoint = true;
+      }
+    }
+    // get the extent of the triangle
+    var extent = getExtentOfTriangle(triangle_);
+    // return true if extent lies not in the extent of the node (does not search on in this node)
+    return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
+  });
+  return foundConstPoint;
+}
+
+function searchCLineInQuadtree(quadtree, triangle) {
+  var foundConstPoint = false;
+  quadtree.visit(function(node, x1, y1, x2, y2) {
+    // Check if there is a point in the node
+    var p = node.point;
+    if (p) {
+      // console.log(p)
+      // p[2] = 'visited';
+      if (pointInTriangle(p, triangle[0], triangle[1], triangle[2]) && triangle.lineIndex !== p[2]) {
+        foundConstPoint = true;
+      }
+    }
+    // get the extent of the triangle
+    var extent = getExtentOfTriangle(triangle);
+    // return true if extent lies not in the extent of the node (does not search on in this node)
+    return x1 >= extent[2] || y1 >= extent[3] || x2 < extent[0] || y2 < extent[1];
+  });
+  return foundConstPoint;
+}
+
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(geometry, clearPoints, timing) {
+  function simplify(geometry, clearPoints, quadtreePoints, timing) {
     if (typeof timing !== "undefined" && timing === true) var start = new Date().getMilliseconds();
 
     if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
 
+    var rawQuadtree_ = d3.geom.quadtree();
+
     var heap = minHeap(),
       maxArea = 0,
-      triangles = [],
       triangle;
+    var linePoints = [];
 
     var lines = geometry.coordinates;
-    lines.forEach(function(line) {
+    lines.forEach(function(line, index) {
       var points = line;
-      for (var i = 1, n = line.length - 1; i < n; ++i) {
+      var triangles = [];
+      for (var i = 1; i < line.length - 1; i++) {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
-          triangle[1][3] = triangle;
+          triangle.area = area(triangle)
+          // triangle[1][3] = triangle;
           triangles.push(triangle);
           heap.push(triangle);
         }
       }
+      for (var i = 0, n = triangles.length; i < n; ++i) {
+        triangle = triangles[i];
+        triangle.previous = triangles[i - 1];
+        triangle.next = triangles[i + 1];
+        triangle.lineIndex = index;
+        triangle.area = triangle[1].area
+      }
+      linePoints = linePoints.concat(points.map(function(p) {
+        return [p[0], p[1], index];
+      }));
     });
     // console.log("Number of triangles: " + triangles.length)
 
-    for (var i = 0, n = triangles.length; i < n; ++i) {
-      triangle = triangles[i];
-      triangle.previous = triangles[i - 1];
-      triangle.next = triangles[i + 1];
-    }
+    // triangles.sort(function(a, b) {
+    //   return a.area - b.area;
+    // });
 
     var counter = 0;
+
+    var quadtreeLines = rawQuadtree_(linePoints);
 
     while (triangle = heap.pop()) {
 
@@ -91,30 +160,40 @@ d3.simplifyNetwork = function() {
       // to be eliminated, use the latterâ€™s area instead. This ensures that the
       // current point cannot be eliminated without eliminating previously-
       // eliminated points.
-      if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
-      else maxArea = triangle[1][2];
+      // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
+      // else maxArea = triangle[1][2];
 
-      if (triangle.previous) {
-        triangle.previous.next = triangle.next;
-        triangle.previous[2] = triangle[2];
-        update(triangle.previous);
-      } else {
-        triangle[0][2] = triangle[1][2];
-        triangle[0][3] = triangle[1][3];
-      }
+      var conflictPoints = searchCPointInQuadtree(quadtreePoints, triangle, projection);
+      var conflictSelf = searchCLineInQuadtree(quadtreeLines, triangle);
 
-      if (triangle.next) {
-        triangle.next.previous = triangle.previous;
-        triangle.next[0] = triangle[0];
-        update(triangle.next);
+      if(conflictPoints === false && conflictSelf === false){
+        if (triangle.previous) {
+          triangle.previous.next = triangle.next;
+          triangle.previous[2] = triangle[2];
+          update(triangle.previous);
+        } else {
+          triangle[0].area = triangle[1].area;
+          triangle[0][2] = triangle[1][2];
+          // triangle[0][3] = triangle[1][3];
+        }
+
+        if (triangle.next) {
+          triangle.next.previous = triangle.previous;
+          triangle.next[0] = triangle[0];
+          update(triangle.next);
+        } else {
+          triangle[2].area = triangle[1].area;
+          triangle[2][2] = triangle[1][2];
+          // triangle[2][3] = triangle[1][3];
+        }
       } else {
-        triangle[2][2] = triangle[1][2];
-        triangle[2][3] = triangle[1][3];
+        triangle[1][3] = triangle;
+        triangle[1][4] = true;
       }
 
       counter ++;
       if (typeof clearPoints !== "undefined" && counter === clearPoints) {
-        break;
+        // break;
       }
     }
 
@@ -122,8 +201,9 @@ d3.simplifyNetwork = function() {
 
     function update(triangle) {
       heap.remove(triangle);
+      triangle[1].area = area(triangle);
       triangle[1][2] = area(triangle);
-      triangle[1][3] = triangle;
+      // triangle[1][3] = triangle;
       heap.push(triangle);
     }
 
