@@ -106,7 +106,8 @@
 	var toolbar = new Toolbar(sidebarContainer, groups, "Select Elements");
 	var lineSelector = new Selector(sidebarContainer, "Select a (single) line");
 	var pointNumberSelector = new Selector(sidebarContainer, "Remove points (single line)");
-	var pointNumberSelectorNetwork = new Selector(sidebarContainer, "Remove points (network)");
+	var pointNumberSelectorNetwork = new Selector(sidebarContainer, "Remove points (network)"),
+		fixedPoints, removedPoints;
 
 	var quadtreePoints, quadtreeLines;
 
@@ -240,6 +241,8 @@
 		infos.append('p').text("Total number of Points: " + linesSingleDataPoints.length);
 		var numDeletablePoints = linesSingleDataPoints.length - (lineData.features.length * 2);
 		infos.append('p').text("Inner number of Points: " + numDeletablePoints);
+		fixedPoints = infos.append('p').text("Fixed Points: 0");
+		removedPoints = infos.append('p').text("Removed Points: 0");
 
 		// initially select the first line
 		addSSelectorSingleLine(1, path, projection, constrainingPoints);

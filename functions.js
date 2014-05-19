@@ -159,10 +159,19 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 					return typeof d[2] !== "undefined" && d[2] === "affected";
 				});
 
+			var numFixedPoints = 0, numRemovedPoints = 0;
 			pointsNetwork
-					.classed("fixed", function(d){return d[2].fixed === true && d[2].startEnd !== true? true : false;})
+					.classed("fixed", function(d){
+						if(d[2].fixed === true && d[2].startEnd !== true) numFixedPoints++;
+						return d[2].fixed === true && d[2].startEnd !== true? true : false;
+					})
 					.transition().duration(1000)
-						.style("opacity", function(d){return d[2].hidden ? .1 : 1;});
+						.style("opacity", function(d){
+							if(d[2].hidden) numRemovedPoints++;
+							return d[2].hidden ? .1 : 1;
+						});
+			fixedPoints.text("Fixed Points: " + numFixedPoints);
+			removedPoints.text("Removed Points: " + numRemovedPoints);
 		})
 }
 
