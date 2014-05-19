@@ -95,13 +95,13 @@ d3.simplifyNetwork = function() {
 
     var heap = minHeap(),
       maxArea = 0,
-      triangles = [],
       triangle;
 
     var lines = geometry.coordinates;
     lines.forEach(function(line) {
       var points = line;
-      for (var i = 1, n = line.length - 1; i < n; ++i) {
+      var triangles = [];
+      for (var i = 1; i < line.length - 1; i++) {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
           triangle.area = area(triangle)
@@ -110,19 +110,18 @@ d3.simplifyNetwork = function() {
           heap.push(triangle);
         }
       }
+      for (var i = 0, n = triangles.length; i < n; ++i) {
+        triangle = triangles[i];
+        triangle.previous = triangles[i - 1];
+        triangle.next = triangles[i + 1];
+        triangle.area = triangle[1].area
+      }
     });
     // console.log("Number of triangles: " + triangles.length)
 
-    for (var i = 0, n = triangles.length; i < n; ++i) {
-      triangle = triangles[i];
-      triangle.previous = triangles[i - 1];
-      triangle.next = triangles[i + 1];
-      triangle.area = triangle[1].area
-    }
-
-    triangles.sort(function(a, b) {
-      return a.area - b.area;
-    });
+    // triangles.sort(function(a, b) {
+    //   return a.area - b.area;
+    // });
 
     var counter = 0;
 
