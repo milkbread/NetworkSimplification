@@ -160,8 +160,9 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 				});
 
 			pointsNetwork
-					.classed("hidden", function(d){return d[2].hidden;})
 					.classed("fixed", function(d){return d[2].fixed === true && d[2].startEnd !== true? true : false;})
+					.transition().duration(1000)
+						.style("opacity", function(d){return d[2].hidden ? .1 : 1;});
 		})
 }
 

@@ -59,6 +59,3 @@ rect {
 .fixed {
 	fill: #0f0;
 }
-.hidden {
-	opacity:.1;
-}
