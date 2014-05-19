@@ -163,10 +163,10 @@ d3.simplifyNetwork = function() {
       // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
       // else maxArea = triangle[1][2];
 
-      // var conflict = searchCPointInQuadtree(quadtreePoints, triangle, projection);
-      var conflict = searchCLineInQuadtree(quadtreeLines, triangle);
+      var conflictPoints = searchCPointInQuadtree(quadtreePoints, triangle, projection);
+      var conflictSelf = searchCLineInQuadtree(quadtreeLines, triangle);
 
-      if(conflict === false){
+      if(conflictPoints === false && conflictSelf === false){
         if (triangle.previous) {
           triangle.previous.next = triangle.next;
           triangle.previous[2] = triangle[2];
