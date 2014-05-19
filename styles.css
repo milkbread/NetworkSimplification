@@ -24,8 +24,12 @@ rect {
 }
 
 .triangle {
-	fill: rgba(50%, 50%, 50%, .4);
-	stroke: none;
+	fill: rgba(50%, 50%, 50%, .2);
+	stroke: #000;
+	stroke-width: .5px;
+}
+.triangle:hover {
+	fill: rgba(50%, 50%, 50%, .6);
 }
 
 .current {

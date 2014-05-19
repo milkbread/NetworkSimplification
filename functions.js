@@ -129,10 +129,11 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 
 	pointNumberSelectorNetwork.select
 		.on("change", function() {
+			triangleGroup.selectAll(".triangle").remove();
 			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
 
 			if (numberOfPoints > 0) {
-				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, true);
+				simplifyNetwork(multiLineGeom, numberOfPoints, quadtreePoints, quadtreeLines, true);
 				d3.rank(multiLineGeom);
 				// d3.clean(multiLineGeom);
 			}
@@ -145,7 +146,7 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 						type: d.type,
 						coordinates: d.coordinates.map(function(line) {
 							return line.filter(function(point) {
-								var filteredPoint = filterPointsSimple(point, numberOfPoints);
+								var filteredPoint = filterPointsSimple(point, numberOfPoints, path);
 								linesNetworkDataPoints[index][2].hidden = !filteredPoint;
 								index ++;
 								return filteredPoint;
@@ -168,14 +169,28 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 					.transition().duration(1000)
 						.style("opacity", function(d){
 							if(d[2].hidden) numRemovedPoints++;
-							return d[2].hidden ? .1 : 1;
+							return d[2].hidden ? 0 : 1;
 						});
 			fixedPoints.text("Fixed Points: " + numFixedPoints);
 			removedPoints.text("Removed Points: " + numRemovedPoints);
 		})
 }
 
-function filterPointsSimple(point, numberOfPoints) {
+function filterPointsSimple(point, numberOfPoints, path) {
+	if(point[2].fixed === true && point[2].startEnd !== true){
+		// ***Show the triangles of the fixed points***
+		// ***###***
+		var triangleCoords = point[2].triangle;
+		// add the first point again to have a closed ring
+		triangleCoords.push(triangleCoords[0])
+		currentTriangle = triangleGroup.append("path")
+			.attr("class", "triangle")
+			.attr("d", path({
+				type: "Polygon",
+				coordinates: [triangleCoords]
+			}));
+		// ***XXX***
+	}
 	if (point[2].fixed === false) {
 		return point[2].rank > numberOfPoints;
 	} else return true;

@@ -50,7 +50,7 @@ d3.rank = function(multiline) {
       // omit 1st AND last point
       var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
       if (j>0 && j<line.length-1 && fixed === false) {
-        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], triangle: point[3], fixed: fixed}
+        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], fixed: fixed}
         pCounter++;
       } else if(j>0 && j<line.length-1 && fixed === true) {
         point[2] = {area: point[2], triangle: point[3], fixed: fixed}
@@ -88,7 +88,7 @@ function searchInQuadtree(quadtree, triangle, projection) {
 d3.simplifyNetwork = function() {
   var projection = d3.geo.albers();
 
-  function simplify(geometry, clearPoints, quadtreePoints, timing) {
+  function simplify(geometry, clearPoints, quadtreePoints, quadtreeLines, timing) {
     if (typeof timing !== "undefined" && timing === true) var start = new Date().getMilliseconds();
 
     if (geometry.type !== "MultiLineString") throw new Error("not yet supported");
@@ -105,7 +105,7 @@ d3.simplifyNetwork = function() {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
           triangle.area = area(triangle)
-          triangle[1][3] = triangle;
+          // triangle[1][3] = triangle;
           triangles.push(triangle);
           heap.push(triangle);
         }
@@ -135,7 +135,7 @@ d3.simplifyNetwork = function() {
       // if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
       // else maxArea = triangle[1][2];
 
-      var conflict = searchInQuadtree(quadtreePoints, triangle[1][3], projection);
+      var conflict = searchInQuadtree(quadtreePoints, triangle, projection);
 
       if(conflict === false){
         if (triangle.previous) {
@@ -145,7 +145,7 @@ d3.simplifyNetwork = function() {
         } else {
           triangle[0].area = triangle[1].area;
           triangle[0][2] = triangle[1][2];
-          triangle[0][3] = triangle[1][3];
+          // triangle[0][3] = triangle[1][3];
         }
 
         if (triangle.next) {
@@ -155,9 +155,10 @@ d3.simplifyNetwork = function() {
         } else {
           triangle[2].area = triangle[1].area;
           triangle[2][2] = triangle[1][2];
-          triangle[2][3] = triangle[1][3];
+          // triangle[2][3] = triangle[1][3];
         }
       } else {
+        triangle[1][3] = triangle;
         triangle[1][4] = true;
       }
 
@@ -173,7 +174,7 @@ d3.simplifyNetwork = function() {
       heap.remove(triangle);
       triangle[1].area = area(triangle);
       triangle[1][2] = area(triangle);
-      triangle[1][3] = triangle;
+      // triangle[1][3] = triangle;
       heap.push(triangle);
     }
 
