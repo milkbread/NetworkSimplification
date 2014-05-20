@@ -50,7 +50,7 @@ d3.rank = function(multiline) {
       // omit 1st AND last point
       var fixed = typeof point[4] !== "undefined" && point[4] === true ? true : false;
       if (j>0 && j<line.length-1 && fixed === false) {
-        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], fixed: fixed}
+        point[2] = {area: point[2], rank: trianglesObject[i][pCounter], triangle: point[3], fixed: fixed}
         pCounter++;
       } else if(j>0 && j<line.length-1 && fixed === true) {
         point[2] = {area: point[2], triangle: point[3], fixed: fixed}

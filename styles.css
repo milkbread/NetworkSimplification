@@ -32,7 +32,7 @@ rect {
 	fill: rgba(50%, 50%, 50%, .6);
 }
 
-.current {
+.selected {
 	fill: rgba(0%, 100%, 0%, .7);
 	stroke: none;
 	stroke-width: .5px;
@@ -62,4 +62,7 @@ rect {
 }
 .fixed {
 	fill: #0f0;
+}
+.clickable {
+	cursor: pointer;
 }

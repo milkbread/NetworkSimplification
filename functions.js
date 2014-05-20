@@ -49,7 +49,7 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 		pointNumberSelector.throwException("Nop...number of points is <= 2!");
 	}
 	// Remove all drawn triangles
-	triangleGroup.selectAll(".triangle").remove();
+	triangleGroupFixed.selectAll(".triangle").remove();
 	pointNumberSelector.select
 		.on("change", function() {
 			var numberOfPoints = pointNumberSelector.selectedID()
@@ -57,7 +57,7 @@ function addSSelectorSingleLine(id, path, projection, constrainingPointsVis) {
 				.attr("d", function(d) {
 					// remove the class 'current' from all triangles
 					linesSingleDataPoints = [];
-					triangleGroup.selectAll(".triangle").classed("current", false);
+					triangleGroupFixed.selectAll(".triangle").classed("current", false);
 					return path({
 						type: d.geometry.type,
 						coordinates: d.geometry.coordinates.filter(
@@ -97,10 +97,10 @@ function filterPoints(point, numberOfPoints, projection, path, i) {
 			var triangleCoords = point[2].triangle;
 			triangleCoords.push(triangleCoords[0])
 			// Check if we have already drawn that triangle
-			var currentTriangle = triangleGroup.select("#triangle"+i);
+			var currentTriangle = triangleGroupFixed.select("#triangle"+i);
 			if (currentTriangle.empty()) {
 				// ...append it if not
-				currentTriangle = triangleGroup.append("path")
+				currentTriangle = triangleGroupFixed.append("path")
 					.attr("class", "triangle")
 					.attr("id", "triangle"+i);
 			}
@@ -129,7 +129,7 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 
 	pointNumberSelectorNetwork.select
 		.on("change", function() {
-			triangleGroup.selectAll(".triangle").remove();
+			triangleGroupFixed.selectAll(".triangle").remove();
 			var numberOfPoints = pointNumberSelectorNetwork.selectedID();
 
 			if (numberOfPoints > 0) {
@@ -166,6 +166,20 @@ function addNSelectorSingleLine(multiLineGeom, path, range, simplifyNetwork, con
 						if(d[2].fixed === true && d[2].startEnd !== true) numFixedPoints++;
 						return d[2].fixed === true && d[2].startEnd !== true? true : false;
 					})
+					.on("mouseover", function(d) {
+						if(d[2].hidden === false && d[2].startEnd !== true) {
+							var triangle = d[2].triangle;
+							triangle.push(triangle[0]);
+							triangleGroupSelected.select(".selected").remove();
+							triangleGroupSelected.append("path")
+								.attr("class", "selected")
+								.attr("d", path({
+									type: "Polygon",
+									coordinates: [triangle]
+								}));
+						}
+					})
+					.classed("clickable", function(d) {return d[2].hidden === false && d[2].startEnd !== true;})
 					.transition().duration(1000)
 						.style("opacity", function(d){
 							if(d[2].hidden) numRemovedPoints++;
@@ -183,7 +197,7 @@ function filterPointsSimple(point, numberOfPoints, path) {
 		var triangleCoords = point[2].triangle;
 		// add the first point again to have a closed ring
 		triangleCoords.push(triangleCoords[0])
-		currentTriangle = triangleGroup.append("path")
+		currentTriangle = triangleGroupFixed.append("path")
 			.attr("class", "triangle")
 			.attr("d", path({
 				type: "Polygon",

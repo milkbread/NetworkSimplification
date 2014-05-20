@@ -44,7 +44,8 @@
 
 	// prepare the SVG-Groups and corresponding object-variables
 	var qGroupLines = svg.append("g").attr("id", "qGroupLines"),
-		triangleGroup = svg.append("g").attr("id", "triangleGroup"),
+		triangleGroupFixed = svg.append("g").attr("id", "triangleGroupFixed"),
+		triangleGroupSelected = svg.append("g").attr("id", "triangleGroupSelected"),
 		qGroupPoints = svg.append("g").attr("id", "qGroupPoints"),
 		boundariesGroup = svg.append("g").attr("id", "boundariesGroup"),
 		pointGroupSingle = svg.append("g").attr("id", "pointGroupSingle"),
@@ -95,9 +96,13 @@
 			description: "Constraining points",
 			svgGroup: consPointGroup,
 			visibility: "visible"},
-		{	name: "triangle",
-			description: "Triangles",
-			svgGroup: triangleGroup,
+		{	name: "triangleFixed",
+			description: "Triangles (fixed)",
+			svgGroup: triangleGroupFixed,
+			visibility: "hidden"},
+		{	name: "triangleSelected",
+			description: "Triangles (selected)",
+			svgGroup: triangleGroupSelected,
 			visibility: "visible"}
 	];
 
