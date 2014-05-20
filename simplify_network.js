@@ -127,6 +127,7 @@ d3.simplifyNetwork = function() {
       for (var i = 1; i < line.length - 1; i++) {
         triangle = points.slice(i - 1, i + 2);
         if (triangle[1][2] = area(triangle)) {
+          triangle[1][3] = triangle;
           triangles.push(triangle);
           heap.push(triangle);
         }
@@ -171,6 +172,7 @@ d3.simplifyNetwork = function() {
           update(triangle.previous);
         } else {
           triangle[0][2] = triangle[1][2];
+          triangle[0][3] = triangle[1][3];
         }
 
         if (triangle.next) {
@@ -179,6 +181,7 @@ d3.simplifyNetwork = function() {
           update(triangle.next);
         } else {
           triangle[2][2] = triangle[1][2];
+          triangle[2][3] = triangle[1][3];
         }
       } else {
         triangle[1][3] = triangle;
@@ -197,6 +200,7 @@ d3.simplifyNetwork = function() {
       // remove the triangle from the heap-array
       heap.remove(triangle);
       triangle[1][2] = area(triangle);
+      triangle[1][3] = triangle;
       // add the triangle it 'sorted'
       heap.push(triangle);
     }
